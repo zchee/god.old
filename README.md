@@ -7,6 +7,7 @@ Go AST indexer daemon for navigating the sources.
 | [![travis-ci.org][travis-badge]][travis-ci] | [![circleci.com][circleci-badge]][circleci]  | [![appveyor-badge][appveyor-badge]][appveyor] |
 | **codecov**                                 | **godoc**                                    | **release**                                   |
 | [![codecov.io][codecov-badge]][codecov]     | [![godoc.org][godoc-badge]][godoc]           | [![Releases][release-badge]][release]         |
+
 [![analytics][ga-badge]][ga]
 
 
