@@ -16,10 +16,10 @@ import (
 	"golang.org/x/tools/go/ssa/ssautil"
 )
 
-// Callers reports the possible callers of the function
+// Callers reports the possible Callers of the function
 // immediately enclosing the specified source location.
 //
-func callers(q *Query) error {
+func Callers(q *Query) error {
 	lconf := loader.Config{Build: q.Build}
 
 	if err := setPTAScope(&lconf, q.Scope); err != nil {

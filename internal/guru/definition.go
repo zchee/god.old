@@ -19,8 +19,8 @@ import (
 	"golang.org/x/tools/go/loader"
 )
 
-// definition reports the location of the definition of an identifier.
-func definition(q *Query) error {
+// Definition reports the location of the Definition of an identifier.
+func Definition(q *Query) error {
 	// First try the simple resolution done by parser.
 	// It only works for intra-file references but it is very fast.
 	// (Extending this approach to all the files of the package,

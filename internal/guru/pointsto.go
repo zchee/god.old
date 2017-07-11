@@ -19,14 +19,14 @@ import (
 	"golang.org/x/tools/go/ssa/ssautil"
 )
 
-// pointsto runs the pointer analysis on the selected expression,
+// Pointsto runs the pointer analysis on the selected expression,
 // and reports its points-to set (for a pointer-like expression)
 // or its dynamic types (for an interface, reflect.Value, or
 // reflect.Type expression) and their points-to sets.
 //
 // All printed sets are sorted to ensure determinism.
 //
-func pointsto(q *Query) error {
+func Pointsto(q *Query) error {
 	lconf := loader.Config{Build: q.Build}
 
 	if err := setPTAScope(&lconf, q.Scope); err != nil {

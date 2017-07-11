@@ -26,7 +26,7 @@ import (
 // TODO(adonovan): permit user to specify a starting point other than
 // the analysis root.
 //
-func callstack(q *Query) error {
+func Callstack(q *Query) error {
 	fset := token.NewFileSet()
 	lconf := loader.Config{Fset: fset, Build: q.Build}
 

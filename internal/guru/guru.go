@@ -83,29 +83,29 @@ type Query struct {
 func Run(mode string, q *Query) error {
 	switch mode {
 	case "callees":
-		return callees(q)
+		return Callees(q)
 	case "callers":
-		return callers(q)
+		return Callers(q)
 	case "callstack":
-		return callstack(q)
+		return Callstack(q)
 	case "peers":
-		return peers(q)
+		return Peers(q)
 	case "pointsto":
-		return pointsto(q)
+		return Pointsto(q)
 	case "whicherrs":
-		return whicherrs(q)
+		return Whicherrs(q)
 	case "definition":
-		return definition(q)
+		return Definition(q)
 	case "describe":
-		return describe(q)
+		return Describe(q)
 	case "freevars":
-		return freevars(q)
+		return Freevars(q)
 	case "implements":
 		return implements(q)
 	case "referrers":
-		return referrers(q)
+		return Referrers(q)
 	case "what":
-		return what(q)
+		return What(q)
 	default:
 		return fmt.Errorf("invalid mode: %q", mode)
 	}

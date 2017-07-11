@@ -21,13 +21,13 @@ import (
 	"golang.org/x/tools/go/types/typeutil"
 )
 
-// describe describes the syntax node denoted by the query position,
+// Describe describes the syntax node denoted by the query position,
 // including:
 // - its syntactic category
 // - the definition of its referent (for identifiers) [now redundant]
 // - its type, fields, and methods (for an expression or type expression)
 //
-func describe(q *Query) error {
+func Describe(q *Query) error {
 	lconf := loader.Config{Build: q.Build}
 	allowErrors(&lconf)
 

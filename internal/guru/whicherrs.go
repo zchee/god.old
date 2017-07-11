@@ -21,7 +21,7 @@ import (
 
 var builtinErrorType = types.Universe.Lookup("error").Type()
 
-// whicherrs takes an position to an error and tries to find all types, constants
+// Whicherrs takes an position to an error and tries to find all types, constants
 // and global value which a given error can point to and which can be checked from the
 // scope where the error lives.
 // In short, it returns a list of things that can be checked against in order to handle
@@ -29,7 +29,7 @@ var builtinErrorType = types.Universe.Lookup("error").Type()
 //
 // TODO(dmorsing): figure out if fields in errors like *os.PathError.Err
 // can be queried recursively somehow.
-func whicherrs(q *Query) error {
+func Whicherrs(q *Query) error {
 	lconf := loader.Config{Build: q.Build}
 
 	if err := setPTAScope(&lconf, q.Scope); err != nil {

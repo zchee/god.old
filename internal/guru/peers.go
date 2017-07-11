@@ -17,13 +17,13 @@ import (
 	"golang.org/x/tools/go/ssa/ssautil"
 )
 
-// peers enumerates, for a given channel send (or receive) operation,
+// Peers enumerates, for a given channel send (or receive) operation,
 // the set of possible receives (or sends) that correspond to it.
 //
 // TODO(adonovan): support reflect.{Select,Recv,Send,Close}.
 // TODO(adonovan): permit the user to query based on a MakeChan (not send/recv),
 // or the implicit receive in "for v := range ch".
-func peers(q *Query) error {
+func Peers(q *Query) error {
 	lconf := loader.Config{Build: q.Build}
 
 	if err := setPTAScope(&lconf, q.Scope); err != nil {

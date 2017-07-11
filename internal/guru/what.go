@@ -18,13 +18,13 @@ import (
 	"golang.org/x/tools/go/ast/astutil"
 )
 
-// what reports all the information about the query selection that can be
+// What reports all the information about the query selection that can be
 // obtained from parsing only its containing source file.
 // It is intended to be a very low-latency query callable from GUI
 // tools, e.g. to populate a menu of options of slower queries about
 // the selected location.
 //
-func what(q *Query) error {
+func What(q *Query) error {
 	qpos, err := fastQueryPos(q.Build, q.Pos)
 	if err != nil {
 		return err

@@ -25,7 +25,7 @@ import (
 
 // Referrers reports all identifiers that resolve to the same object
 // as the queried identifier, within any package in the workspace.
-func referrers(q *Query) error {
+func Referrers(q *Query) error {
 	fset := token.NewFileSet()
 	lconf := loader.Config{Fset: fset, Build: q.Build}
 	allowErrors(&lconf)

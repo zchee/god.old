@@ -16,7 +16,7 @@ import (
 	"golang.org/x/tools/go/loader"
 )
 
-// freevars displays the lexical (not package-level) free variables of
+// Freevars displays the lexical (not package-level) free variables of
 // the selection.
 //
 // It treats A.B.C as a separate variable from A to reveal the parts
@@ -29,7 +29,7 @@ import (
 // these might be interesting.  Perhaps group the results into three
 // bands.
 //
-func freevars(q *Query) error {
+func Freevars(q *Query) error {
 	lconf := loader.Config{Build: q.Build}
 	allowErrors(&lconf)
 
