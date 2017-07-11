@@ -41,6 +41,9 @@ type QueryResult interface {
 	// PrintPlain prints the QueryResult in plain text form.
 	// The implementation calls printfFunc to print each line of output.
 	PrintPlain(printf printfFunc)
+
+	// Result returns the raw guru/serial result.
+	Result(fset *token.FileSet) interface{}
 }
 
 // A QueryPos represents the position provided as input to a query:
