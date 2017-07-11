@@ -1,0 +1,276 @@
+// Copyright 2017 The god Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+syntax = "proto3";
+
+package pb;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+
+// Location is the location of current cursor.
+message Location {
+  string filename = 1;
+  int64 line = 2;
+  int64 col = 3;
+  int64 offset = 4;
+}
+
+// Peers is the result of a 'peers' query.
+// If Allocs is empty, the selected channel can't point to anything.
+message Peers {
+  string Pos = 1;               // location of the selected channel op (<-)
+  string Type = 2;              // type of the selected channel
+  repeated string Allocs = 3;   // locations of aliased make(chan) ops
+  repeated string Sends = 4;    // locations of aliased ch<-x ops
+  repeated string Receives = 5; // locations of aliased <-ch ops
+  repeated string Closes = 6;   // locations of aliased close(ch) ops
+}
+
+// A "referrers" query emits a ReferrersInitial object followed by zero or
+// more ReferrersPackage objects, one per package that contains a reference.
+message ReferrersInitial {
+  string ObjPos = 1; // location of the definition
+  string Desc = 2;   // description of the denoted object
+}
+
+message ReferrersPackage {
+  string Package = 1;
+  repeated Ref Refs = 2 [ (gogoproto.nullable) = false ]; // non-empty list of references within this package
+}
+
+message Ref {
+  string Pos = 1;  // location of all references
+  string Text = 2; // text of the referring line
+}
+
+// Definition is the result of a 'definition' query.
+message Definition {
+  string ObjPos = 1; // location of the definition
+  string Desc = 2;   // description of the denoted object
+}
+
+// Callees is the result of a 'callees' query.
+message Callees {
+  string Pos = 1;  // location of selected call site
+  string Desc = 2; // description of call site
+  repeated Callee Callees = 3;
+}
+
+// Callees is nonempty unless the call was a dynamic call on a
+// provably nil func or interface value.
+message Callee {
+  string Name = 1; // full name of called function
+  string Pos = 2;  // location of called function
+}
+
+// Callers is slice of Caller.
+message Callers { repeated Caller Callers = 1; }
+
+// Caller is one element of the slice returned by a 'callers' query.
+// (Callstack also contains a similar slice.)
+//
+// The root of the callgraph has an unspecified "Caller" string.
+message Caller {
+  string Pos = 1;    // location of the calling function
+  string Desc = 2;   // description of call site
+  string Caller = 3; // full name of calling function
+}
+
+// CallStack is the result of a 'callstack' query.
+// It indicates an arbitrary path from the root of the callgraph to
+// the query function.
+//
+// If the Callers slice is empty, the function was unreachable in this
+// analysis scope.
+message CallStack {
+  string Pos = 1;                                               // location of the selected function
+  string Target = 2;                                            // the selected function
+  repeated Caller Callers = 3 [ (gogoproto.nullable) = false ]; // enclosing calls, innermost first.
+}
+
+// FreeVars is the slice of FreeVar.
+message FreeVars { repeated FreeVar FreeVar = 1; }
+
+// FreeVar is one element of the slice returned by a 'freevars'
+// query.  Each one identifies an expression referencing a local
+// identifier defined outside the selected region.
+message FreeVar {
+  string Pos = 1;  // location of the identifier's definition
+  string Kind = 2; // one of {var,func,type,const,label}
+  string Ref = 3;  // referring expression (e.g. "x" or "x.y.z")
+  string Type = 4; // type of the expression
+}
+
+// Implements contains the result of an 'implements' query.
+// It describes the queried type, the set of named non-empty interface
+// types to which it is assignable, and the set of named/*named types
+// (concrete or non-empty interface) which may be assigned to it.
+//
+message Implements {
+  ImplementsType T = 1;                                                        // the queried type
+  repeated ImplementsType AssignableTo = 2 [ (gogoproto.nullable) = false ];   // types assignable to T
+  repeated ImplementsType AssignableFrom = 3 [ (gogoproto.nullable) = false ]; // interface types assignable from T
+  repeated ImplementsType AssignableFromPtr = 4
+      [ (gogoproto.nullable) = false ]; // interface types assignable only from *T
+
+  // The following fields are set only if the query was a method.
+  // Assignable{To,From,FromPtr}Method[i] is the corresponding
+  // method of type Assignable{To,From,FromPtr}[i], or blank
+  // {"",""} if that type lacks the method.
+  DescribeMethod Method = 5; //  the queried method
+  repeated DescribeMethod AssignableToMethod = 6 [ (gogoproto.nullable) = false ];
+  repeated DescribeMethod AssignableFromMethod = 7 [ (gogoproto.nullable) = false ];
+  repeated DescribeMethod AssignableFromPtrMethod = 8 [ (gogoproto.nullable) = false ];
+}
+
+// ImplementsType describes a single type as part of an 'implements' query.
+message ImplementsType {
+  string Name = 1; // full name of the type
+  string Pos = 2;  // location of its definition
+  string Kind = 3; // "basic", "array", etc
+}
+
+// SyntaxNode is one element of a stack of enclosing syntax nodes in
+// a "what" query.
+message SyntaxNode {
+  string Description = 1; // description of syntax tree
+  int32 Start = 2;        // start byte offset, 0-based
+  int32 End = 3;          // end byte offset
+}
+
+// What is the result of the "what" query, which quickly identifies
+// the selection, parsing only a single file.  It is intended for use
+// in low-latency GUIs.
+message What {
+  repeated SyntaxNode Enclosing = 1 [ (gogoproto.nullable) = false ]; // enclosing nodes of syntax tree
+  repeated string Modes = 2;                                          // query modes enabled for this selection.
+  string SrcDir = 3;           // $GOROOT src directory containing queried package
+  string ImportPath = 4;       // import path of queried package
+  string Object = 5;           // name of identified object, if any
+  repeated string SameIDs = 6; // locations of references to same object
+}
+
+// PointsToLabel describes a pointer analysis label.
+//
+// A "label" is an object that may be pointed to by a pointer, map,
+// channel, 'func', slice or interface.  Labels include:
+//    - functions
+//    - globals
+//    - arrays created by literals (e.g. []byte("foo")) and conversions
+//    ([]byte(s))
+//    - stack- and heap-allocated variables (including composite literals)
+//    - arrays allocated by append()
+//    - channels, maps and arrays created by make()
+//    - and their subelements, e.g. "alloc.y[*].z"
+//
+message PointsToLabel {
+  string Pos = 1;  // location of syntax that allocated the object
+  string Desc = 2; // description of the label
+}
+
+// PointsTo is one element of the result of a 'pointsto' query on an
+// expression.  It describes a single pointer: its type and the set of
+// "labels" it points to.
+//
+// If the pointer is of interface type, it will have one PTS entry
+// describing each concrete type that it may contain.  For each
+// concrete type that is a pointer, the PTS entry describes the labels
+// it may point to.  The same is true for reflect.Values, except the
+// dynamic types needn't be concrete.
+//
+message PointsTo {
+  string Type = 1;                                                    // (concrete) type of the pointer
+  string NamePos = 2;                                                 // location of type defn, if Named
+  repeated PointsToLabel Labels = 3 [ (gogoproto.nullable) = false ]; // pointed-to objects
+}
+
+// DescribeValue is the additional result of a 'describe' query
+// if the selection indicates a value or expression.
+message DescribeValue {
+  string Type = 1;   // type of the expression
+  string Value = 2;  // value of the expression, if constant
+  string ObjPos = 3; // location of the definition, if an Ident
+}
+
+message DescribeMethods { repeated DescribeMethod Methods = 1; }
+
+message DescribeMethod {
+  string Name = 1; // method name, as defined by types.Selection.String()
+  string Pos = 3;  // location of the method's definition
+}
+
+// DescribeType is the additional result of a 'describe' query
+// if the selection indicates a type.
+message DescribeType {
+  string Type = 1;                                                      // the string form of the type
+  string NamePos = 2;                                                   // location of definition of type, if named
+  string NameDef = 3;                                                   // underlying definition of type, if named
+  repeated DescribeMethod Methods = 4 [ (gogoproto.nullable) = false ]; // methods of the type
+}
+
+message DescribeMember {
+  string Name = 1;                                                      // name of member
+  string Type = 2;                                                      // type of member (underlying, if 'type')
+  string Value = 3;                                                     // value of member (if 'const')
+  string Pos = 4;                                                       // location of definition of member
+  string Kind = 5;                                                      // one of {var,const,func,type}
+  repeated DescribeMethod Methods = 6 [ (gogoproto.nullable) = false ]; // methods (if member is a type)
+}
+
+// DescribePackage is the additional result of a 'describe' if
+// the selection indicates a package.
+message DescribePackage {
+  string Path = 1;                     // import path of the package
+  repeated DescribeMember Members = 2; // accessible members of the package
+}
+
+// Describe is the result of a 'describe' query.
+// It may contain an element describing the selected semantic entity
+// in detail.
+message Describe {
+  string Desc = 1;   // description of the selected syntax node
+  string Pos = 2;    // location of the selected syntax node
+  string Detail = 3; // one of {package, type, value}, or "".
+
+  // At most one of the following fields is populated:
+  // the one specified by 'detail'.
+  DescribePackage Package = 4;
+  DescribeType Type = 5;
+  DescribeValue Value = 6;
+}
+
+// A WhichErrs is the result of a 'whicherrs' query.
+// It contains the position of the queried error and the possible globals,
+// constants, and types it may point to.
+message WhichErrs {
+  string ErrPos = 1;                                                 // location of queried error
+  repeated string Globals = 2;                                       // locations of globals
+  string Constants = 3;                                              // locations of constants
+  repeated WhichErrsType Types = 4 [ (gogoproto.nullable) = false ]; // Types
+}
+
+message WhichErrsType {
+  string Type = 1;
+  string Position = 2;
+}
+
+service God {
+  rpc GetCallees(Location) returns (Callees) {}
+  rpc GetCallers(Location) returns (Callers) {}
+  rpc GetCallStack(Location) returns (CallStack) {}
+  rpc GetDefinition(Location) returns (Definition) {}
+  rpc GetDescribe(Location) returns (DescribeMethods) {}
+  rpc GetFreeVar(Location) returns (FreeVars) {}
+  rpc GetImplements(Location) returns (Implements) {}
+  rpc GetPeers(Location) returns (Peers) {}
+  rpc GetPointsTo(Location) returns (PointsTo) {}
+  rpc GetReferrers(Location) returns (ReferrersPackage) {}
+  rpc GetWhat(Location) returns (What) {}
+  rpc GetWhichErrs(Location) returns (WhichErrs) {}
+}
