@@ -11,6 +11,17 @@ Go AST indexer daemon for navigating the sources.
 [![analytics][ga-badge]][ga]
 
 
+## Concept
+
+- [ ] Daemonize `guru`
+  - [ ] Cache packages AST
+  - [ ] Server/Client architechture over the gRPC with protobuf
+- [ ] Cross platform
+  - [ ] darwin
+  - [ ] linux
+  - [ ] windows
+
+
 [travis-ci]: https://travis-ci.org/zchee/god
 [circleci]: https://circleci.com/gh/zchee/god
 [appveyor]: https://ci.appveyor.com/project/zchee/god
