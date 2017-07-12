@@ -32,11 +32,11 @@ vendor/install:
 	go install -v -x -race $(GO_VENDOR_PACKAGES)
 
 pb: pb/fmt
-	@rm -f $(shell find pb -type f -name '*.pb.go')
-	protoc --gogofaster_out=plugins=grpc:. -I. -I$(GOPATH)/src $(shell find . -type f -name '*.proto')
+	@rm -f $(shell find serial -type f -name '*.pb.go')
+	protoc --gogofaster_out=plugins=grpc:. -I. -I$(GOPATH)/src $(shell find serial -type f -name '*.proto')
 
 pb/fmt:
-	clang-format -i $(shell find . -type f -name '*.proto')
+	clang-format -i $(shell find serial -type f -name '*.proto')
 
 
 .PHONY: build install clean lint vet vendor/install pb pb/fmt
