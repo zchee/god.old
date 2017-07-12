@@ -4,7 +4,7 @@
 
 syntax = "proto3";
 
-package pb;
+package serial;
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
