@@ -260,7 +260,13 @@ message WhichErrsType {
   string Position = 2;
 }
 
+message Request {}
+
+message Response {}
+
 service God {
+  rpc Ping(Request) returns (Response) {}
+
   rpc GetCallees(Location) returns (Callees) {}
   rpc GetCallers(Location) returns (Callers) {}
   rpc GetCallStack(Location) returns (CallStack) {}
