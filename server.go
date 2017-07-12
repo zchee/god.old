@@ -87,12 +87,10 @@ func (s *Server) Stop() {
 	s.mu.Unlock()
 }
 
-var outputMu sync.Mutex
-
 func (s *Server) Output(fset *token.FileSet, qr guru.QueryResult) {
-	outputMu.Lock()
-	defer outputMu.Unlock()
+	s.mu.Lock()
 	s.result = qr.Result(fset)
+	s.mu.Unlock()
 }
 
 func (s *Server) Ping(ctx context.Context, req *serialpb.Request) (*serialpb.Response, error) {
