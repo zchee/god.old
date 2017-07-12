@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
+  version = "v1.1.0"
+
+[[projects]]
   name = "github.com/gogo/protobuf"
   packages = ["gogoproto","proto","protoc-gen-gogo/descriptor"]
   revision = "100ba4e885062801d56799d78530b73b178a78f3"
@@ -17,7 +23,7 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","http2","http2/hpack","idna","internal/timeseries","lex/httplex","trace"]
-  revision = "054b33e6527139ad5b1ec2f6232c3b175bd9a30c"
+  revision = "f01ecb60fe3835d80d9a0b7b2bf24b228c89260e"
 
 [[projects]]
   branch = "master"
@@ -35,17 +41,17 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "40b7550fd0ba4b8f7e9d70ed40fcd4f3375db1de"
+  revision = "b0a3dcfcd1a9bd48e63634bd8802960804cf8315"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/grpc"
   packages = [".","codes","credentials","grpclb/grpc_lb_v1","grpclog","internal","keepalive","metadata","naming","peer","stats","status","tap","transport"]
-  revision = "93166a0b0b28148e988c11f4f15a9d92cdc3414a"
+  revision = "8264d619d80050c74e3ced8229869f525f9b877a"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b435d7891ec94d420615db854e5954896504379ebd091c1cfbf1cf50f68ace84"
+  inputs-digest = "2080e19b08a0777bf7070d69ae8a91d2bb451f660be9bb4b676d9383ac657f8d"
   solver-name = "gps-cdcl"
   solver-version = 1
