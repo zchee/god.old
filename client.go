@@ -45,7 +45,6 @@ func (c *Client) Definition(ctx context.Context, pos string) {
 		log.Fatal(err)
 	}
 	loc := CreateLocation(p[0], int64(offset))
-	// loc := CreateLocation("/Users/zchee/go/src/github.com/zchee/god/testdata/pkginfo.go", 855)
 	def, err := c.godclient.GetDefinition(ctx, loc)
 	if err != nil {
 		log.Fatalf("could not get Definition: %v", err)
@@ -61,15 +60,6 @@ func (c *Client) Ping() (*serialpb.Response, error) {
 // Stop sends stop signal to god gRPC server.
 func (c *Client) Stop() {
 	log.Debugln("Stop")
-
-	// sig := CreateSignal(pb.SignalType_Stop)
-	// if resp, err := c.godclient.SendSignal(context.Background(), sig); err != nil && resp.GetReturn() != pb.ResultType_Success {
-	// 	if s, ok := status.FromError(err); !ok {
-	// 		log.Debugf("s.Message(): %T => %+v\n", s.Message(), s.Message())
-	// 		return
-	// 	}
-	// 	log.Fatalf("could not send Signal: %v", err)
-	// }
 }
 
 // Close closes the grpc ClientConn.
