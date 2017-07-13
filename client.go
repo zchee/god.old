@@ -16,8 +16,8 @@ import (
 
 // Client represents a god client.
 type Client struct {
-	conn      *grpc.ClientConn
-	godclient serialpb.GodClient
+	conn  *grpc.ClientConn
+	grpcc serialpb.GodClient
 }
 
 func init() {
@@ -28,8 +28,8 @@ func init() {
 // NewClient sets serialpb.NewClient() and return the new pointer Client.
 func NewClient(conn *grpc.ClientConn) *Client {
 	return &Client{
-		conn:      conn,
-		godclient: serialpb.NewGodClient(conn),
+		conn:  conn,
+		grpcc: serialpb.NewGodClient(conn),
 	}
 }
 
@@ -38,7 +38,7 @@ func (c *Client) Definition(ctx context.Context, pos string) {
 	log.Debugln("Definition")
 
 	loc := &serialpb.Location{Pos: pos}
-	def, err := c.godclient.GetDefinition(ctx, loc)
+	def, err := c.grpcc.GetDefinition(ctx, loc)
 	if err != nil {
 		log.Fatalf("could not get Definition: %v", err)
 	}
@@ -47,7 +47,7 @@ func (c *Client) Definition(ctx context.Context, pos string) {
 
 func (c *Client) Ping() (*serialpb.Response, error) {
 	log.Debugln("Ping")
-	return c.godclient.Ping(context.Background(), &serialpb.Request{})
+	return c.grpcc.Ping(context.Background(), &serialpb.Request{})
 }
 
 // Stop sends stop signal to god gRPC server.
