@@ -24,7 +24,7 @@ const Address = ":7154" // g: 7, o: 15, d: 4
 
 // Server represents a god server.
 type Server struct {
-	s      *grpc.Server
+	grpcs  *grpc.Server
 	mu     sync.Mutex
 	done   chan struct{}
 	result interface{}
@@ -34,7 +34,7 @@ type Server struct {
 func NewServer() *Server {
 	s := grpc.NewServer()
 	srv := &Server{
-		s: s,
+		grpcs: s,
 	}
 	serialpb.RegisterGodServer(s, srv)
 	return srv
@@ -48,7 +48,7 @@ func (s *Server) serve() error {
 		return err
 	}
 
-	return s.s.Serve(lis)
+	return s.grpcs.Serve(lis)
 }
 
 // Start starts the god gRPC server.
@@ -67,7 +67,7 @@ func (s *Server) Start() error {
 			return err
 		}
 	case <-s.done:
-		s.s.Stop()
+		s.grpcs.Stop()
 	}
 
 	return nil
