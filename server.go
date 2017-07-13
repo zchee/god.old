@@ -8,7 +8,6 @@ import (
 	"go/build"
 	"go/token"
 	"net"
-	"strconv"
 	"sync"
 
 	"github.com/zchee/god/internal/guru"
@@ -112,7 +111,7 @@ func (s *Server) GetCallStack(ctx context.Context, loc *serialpb.Location) (*ser
 func (s *Server) GetDefinition(ctx context.Context, loc *serialpb.Location) (*serialpb.Definition, error) {
 	log.Debug("GetDefinition")
 	query := &guru.Query{
-		Pos:    loc.Filename + ":#" + strconv.Itoa(int(loc.Offset)),
+		Pos:    loc.Pos,
 		Build:  &build.Default,
 		Output: s.Output,
 	}

@@ -7,8 +7,6 @@ package god
 import (
 	"context"
 	"io/ioutil"
-	"strconv"
-	"strings"
 
 	"github.com/zchee/god/internal/log"
 	serialpb "github.com/zchee/god/serial"
@@ -39,12 +37,7 @@ func NewClient(conn *grpc.ClientConn) *Client {
 func (c *Client) Definition(ctx context.Context, pos string) {
 	log.Debugln("Definition")
 
-	p := strings.Split(pos, ":#")
-	offset, err := strconv.Atoi(p[1])
-	if err != nil {
-		log.Fatal(err)
-	}
-	loc := CreateLocation(p[0], int64(offset))
+	loc := &serialpb.Location{Pos: pos}
 	def, err := c.godclient.GetDefinition(ctx, loc)
 	if err != nil {
 		log.Fatalf("could not get Definition: %v", err)
