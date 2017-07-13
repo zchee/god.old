@@ -25,7 +25,6 @@ const Address = ":7154" // g: 7, o: 15, d: 4
 // Server represents a god server.
 type Server struct {
 	s      *grpc.Server
-	lis    net.Listener
 	mu     sync.Mutex
 	done   chan struct{}
 	result interface{}
@@ -48,11 +47,8 @@ func (s *Server) serve() error {
 	if err != nil {
 		return err
 	}
-	s.mu.Lock()
-	s.lis = lis
-	s.mu.Unlock()
 
-	return s.s.Serve(s.lis)
+	return s.s.Serve(lis)
 }
 
 // Start starts the god gRPC server.
@@ -72,7 +68,6 @@ func (s *Server) Start() error {
 		}
 	case <-s.done:
 		s.s.Stop()
-		defer s.lis.Close()
 	}
 
 	return nil
