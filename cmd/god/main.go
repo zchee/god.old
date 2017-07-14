@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"flag"
+	"go/build"
 	"net"
 	"os"
 	"os/signal"
@@ -16,6 +17,7 @@ import (
 	"github.com/zchee/god"
 	"github.com/zchee/god/internal/log"
 
+	"golang.org/x/tools/go/buildutil"
 	"google.golang.org/grpc"
 )
 
@@ -26,6 +28,7 @@ var (
 )
 
 func init() {
+	flag.Var((*buildutil.TagsFlag)(&build.Default.BuildTags), "tags", buildutil.TagsFlagDoc)
 	flag.Parse()
 }
 
