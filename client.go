@@ -33,6 +33,18 @@ func NewClient(conn *grpc.ClientConn) *Client {
 	}
 }
 
+// Callees return the callees information of current cursor position.
+func (c *Client) Callees(ctx context.Context, pos string) {
+	log.Debugln("Callees")
+
+	loc := &serialpb.Location{Pos: pos}
+	def, err := c.grpcc.GetCallees(ctx, loc)
+	if err != nil {
+		log.Fatalf("could not get Callees: %v", err)
+	}
+	log.Debugf("callees: %T => %+v\n", def, def)
+}
+
 // Definition return the definition information of current cursor position.
 func (c *Client) Definition(ctx context.Context, pos string) {
 	log.Debugln("Definition")

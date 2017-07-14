@@ -100,7 +100,29 @@ func (s *Server) Ping(ctx context.Context, req *serialpb.Request) (*serialpb.Res
 }
 
 func (s *Server) GetCallees(ctx context.Context, loc *serialpb.Location) (*serialpb.Callees, error) {
-	return &serialpb.Callees{}, nil
+	log.Debug("GetCallees")
+	query := s.query(loc.Pos)
+	if err := guru.Callees(query); err != nil {
+		return nil, err
+	}
+
+	s.mu.RLock()
+	res := s.result.(*serial.Callees)
+	s.mu.RUnlock()
+
+	callees := make([]*serialpb.Callee, len(res.Callees))
+	for i, callee := range res.Callees {
+		callees[i] = &serialpb.Callee{
+			Name: callee.Name,
+			Pos:  callee.Pos,
+		}
+	}
+
+	return &serialpb.Callees{
+		Pos:     res.Pos,
+		Desc:    res.Desc,
+		Callees: callees,
+	}, nil
 }
 
 func (s *Server) GetCallers(ctx context.Context, loc *serialpb.Location) (*serialpb.Callers, error) {
