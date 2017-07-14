@@ -47,11 +47,11 @@ func (c *Client) Callees(ctx context.Context, pos string, opt *ClientOptions) {
 			Scope: opt.Scope,
 		}
 	}
-	def, err := c.grpcc.GetCallees(ctx, loc)
+	callees, err := c.grpcc.GetCallees(ctx, loc)
 	if err != nil {
 		log.Fatalf("could not get Callees: %v", err)
 	}
-	log.Debugf("callees: %T => %+v\n", def, def)
+	log.Debugf("callees: %T => %+v\n", callees, callees)
 }
 
 // Definition return the definition information of current cursor position.
