@@ -8,6 +8,7 @@ import (
 	"go/build"
 	"go/token"
 	"net"
+	"strings"
 	"sync"
 
 	"github.com/zchee/god/internal/guru"
@@ -87,12 +88,20 @@ func (s *Server) Output(fset *token.FileSet, qr guru.QueryResult) {
 	s.mu.Unlock()
 }
 
-func (s *Server) query(pos string) *guru.Query {
-	return &guru.Query{
-		Pos:    pos,
+func (s *Server) query(loc *serialpb.Location) *guru.Query {
+	q := &guru.Query{
+		Pos:    loc.Pos,
 		Build:  &build.Default,
 		Output: s.Output,
 	}
+	if loc.Options != nil {
+		log.Debugln(loc.Options)
+		if loc.Options.Scope != "" {
+			scopes := strings.Split(loc.Options.Scope, ",")
+			q.Scope = scopes
+		}
+	}
+	return q
 }
 
 func (s *Server) Ping(ctx context.Context, req *serialpb.Request) (*serialpb.Response, error) {
@@ -101,7 +110,8 @@ func (s *Server) Ping(ctx context.Context, req *serialpb.Request) (*serialpb.Res
 
 func (s *Server) GetCallees(ctx context.Context, loc *serialpb.Location) (*serialpb.Callees, error) {
 	log.Debug("GetCallees")
-	query := s.query(loc.Pos)
+	log.Debugln(loc)
+	query := s.query(loc)
 	if err := guru.Callees(query); err != nil {
 		return nil, err
 	}
@@ -135,7 +145,7 @@ func (s *Server) GetCallStack(ctx context.Context, loc *serialpb.Location) (*ser
 
 func (s *Server) GetDefinition(ctx context.Context, loc *serialpb.Location) (*serialpb.Definition, error) {
 	log.Debug("GetDefinition")
-	query := s.query(loc.Pos)
+	query := s.query(loc)
 	if err := guru.Definition(query); err != nil {
 		return nil, err
 	}

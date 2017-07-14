@@ -20,6 +20,10 @@ type Client struct {
 	grpcc serialpb.GodClient
 }
 
+type ClientOptions struct {
+	Scope string
+}
+
 func init() {
 	// disable the annoying grpclog output.
 	grpclog.SetLogger(log.New(ioutil.Discard, "", 0))
@@ -34,10 +38,15 @@ func NewClient(conn *grpc.ClientConn) *Client {
 }
 
 // Callees return the callees information of current cursor position.
-func (c *Client) Callees(ctx context.Context, pos string) {
+func (c *Client) Callees(ctx context.Context, pos string, opt *ClientOptions) {
 	log.Debugln("Callees")
 
 	loc := &serialpb.Location{Pos: pos}
+	if opt != nil {
+		loc.Options = &serialpb.Options{
+			Scope: opt.Scope,
+		}
+	}
 	def, err := c.grpcc.GetCallees(ctx, loc)
 	if err != nil {
 		log.Fatalf("could not get Callees: %v", err)
@@ -46,10 +55,15 @@ func (c *Client) Callees(ctx context.Context, pos string) {
 }
 
 // Definition return the definition information of current cursor position.
-func (c *Client) Definition(ctx context.Context, pos string) {
+func (c *Client) Definition(ctx context.Context, pos string, opt *ClientOptions) {
 	log.Debugln("Definition")
 
 	loc := &serialpb.Location{Pos: pos}
+	if opt != nil {
+		loc.Options = &serialpb.Options{
+			Scope: opt.Scope,
+		}
+	}
 	def, err := c.grpcc.GetDefinition(ctx, loc)
 	if err != nil {
 		log.Fatalf("could not get Definition: %v", err)
