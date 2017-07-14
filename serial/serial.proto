@@ -19,7 +19,11 @@ message Location {
   int64 line = 2;
   int64 col = 3;
   string pos = 4;
+
+  Options options = 5;
 }
+
+message Options { string Scope = 1; }
 
 // Peers is the result of a 'peers' query.
 // If Allocs is empty, the selected channel can't point to anything.
