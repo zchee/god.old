@@ -22,6 +22,7 @@ import (
 var (
 	daemonize  = flag.Bool("d", false, "run god daemon instead of client")
 	cpuprofile = flag.String("cpuprofile", "", "write CPU profile to file")
+	scope      = flag.String("scope", "", "comma-separated list of packages the analysis should be limited to")
 )
 
 func init() {
@@ -83,10 +84,17 @@ func main() {
 		}
 	}
 
+	opt := new(god.ClientOptions)
+	if *scope != "" {
+		opt.Scope = *scope
+	}
+
 	cmd := args[0]
 	switch cmd {
+	case "callees":
+		c.Callees(ctx, args[1], opt)
 	case "definition":
-		c.Definition(ctx, args[1])
+		c.Definition(ctx, args[1], opt)
 	case "stop":
 		c.Stop()
 	default:
