@@ -98,6 +98,8 @@ func main() {
 		c.Callees(ctx, args[1], opt)
 	case "callers":
 		c.Callers(ctx, args[1], opt)
+	case "callstack":
+		c.Callstack(ctx, args[1], opt)
 	case "definition":
 		c.Definition(ctx, args[1], opt)
 	case "stop":
