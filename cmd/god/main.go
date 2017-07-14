@@ -96,6 +96,8 @@ func main() {
 	switch cmd {
 	case "callees":
 		c.Callees(ctx, args[1], opt)
+	case "callers":
+		c.Callers(ctx, args[1], opt)
 	case "definition":
 		c.Definition(ctx, args[1], opt)
 	case "stop":
