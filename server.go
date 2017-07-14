@@ -95,11 +95,8 @@ func (s *Server) query(loc *serialpb.Location) *guru.Query {
 		Output: s.Output,
 	}
 	if loc.Options != nil {
-		log.Debugln(loc.Options)
-		if loc.Options.Scope != "" {
-			scopes := strings.Split(loc.Options.Scope, ",")
-			q.Scope = scopes
-		}
+		scopes := strings.Split(loc.Options.Scope, ",")
+		q.Scope = scopes
 	}
 	return q
 }
