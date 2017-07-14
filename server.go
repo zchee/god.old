@@ -134,7 +134,27 @@ func (s *Server) GetCallees(ctx context.Context, loc *serialpb.Location) (*seria
 }
 
 func (s *Server) GetCallers(ctx context.Context, loc *serialpb.Location) (*serialpb.Callers, error) {
-	return &serialpb.Callers{}, nil
+	query := s.query(loc)
+	if err := guru.Callers(query); err != nil {
+		return nil, err
+	}
+
+	s.mu.RLock()
+	res := s.result.([]serial.Caller)
+	s.mu.RUnlock()
+
+	callers := &serialpb.Callers{
+		Callers: make([]*serialpb.Caller, len(res)),
+	}
+	for i, caller := range res {
+		callers.Callers[i] = &serialpb.Caller{
+			Pos:    caller.Pos,
+			Desc:   caller.Desc,
+			Caller: caller.Caller,
+		}
+	}
+
+	return callers, nil
 }
 
 func (s *Server) GetCallStack(ctx context.Context, loc *serialpb.Location) (*serialpb.CallStack, error) {

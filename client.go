@@ -54,6 +54,23 @@ func (c *Client) Callees(ctx context.Context, pos string, opt *ClientOptions) {
 	log.Debugf("callees: %T => %+v\n", callees, callees)
 }
 
+// Callers return the callers information of current cursor position.
+func (c *Client) Callers(ctx context.Context, pos string, opt *ClientOptions) {
+	log.Debugln("Callers")
+
+	loc := &serialpb.Location{Pos: pos}
+	if opt != nil {
+		loc.Options = &serialpb.Options{
+			Scope: opt.Scope,
+		}
+	}
+	callers, err := c.grpcc.GetCallers(ctx, loc)
+	if err != nil {
+		log.Fatalf("could not get Callees: %v", err)
+	}
+	log.Debugf("callees: %T => %+v\n", callers, callers)
+}
+
 // Definition return the definition information of current cursor position.
 func (c *Client) Definition(ctx context.Context, pos string, opt *ClientOptions) {
 	log.Debugln("Definition")
