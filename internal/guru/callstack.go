@@ -52,19 +52,19 @@ func Callstack(q *Query) error {
 		return err
 	}
 
-	pkg := prog.Package(qpos.info.Pkg)
+	pkg := prog.Package(qpos.Info.Pkg)
 	if pkg == nil {
 		return fmt.Errorf("no SSA package")
 	}
 
-	if !ssa.HasEnclosingFunction(pkg, qpos.path) {
+	if !ssa.HasEnclosingFunction(pkg, qpos.Path) {
 		return fmt.Errorf("this position is not inside a function")
 	}
 
 	// Defer SSA construction till after errors are reported.
 	prog.Build()
 
-	target := ssa.EnclosingFunction(pkg, qpos.path)
+	target := ssa.EnclosingFunction(pkg, qpos.Path)
 	if target == nil {
 		return fmt.Errorf("no SSA function built for this location (dead code?)")
 	}
@@ -105,7 +105,7 @@ func Callstack(q *Query) error {
 }
 
 type callstackResult struct {
-	qpos     *queryPos
+	qpos     *QueryPos
 	target   *ssa.Function
 	callpath []*callgraph.Edge
 }

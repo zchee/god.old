@@ -31,18 +31,18 @@ func What(q *Query) error {
 	}
 
 	// (ignore errors)
-	srcdir, importPath, _ := guessImportPath(qpos.fset.File(qpos.start).Name(), q.Build)
+	srcdir, importPath, _ := guessImportPath(qpos.Fset.File(qpos.Start).Name(), q.Build)
 
 	// Determine which query modes are applicable to the selection.
 	enable := map[string]bool{
 		"describe": true, // any syntax; always enabled
 	}
 
-	if qpos.end > qpos.start {
+	if qpos.end > qpos.Start {
 		enable["freevars"] = true // nonempty selection?
 	}
 
-	for _, n := range qpos.path {
+	for _, n := range qpos.Path {
 		switch n := n.(type) {
 		case *ast.Ident:
 			enable["definition"] = true
@@ -100,7 +100,7 @@ func What(q *Query) error {
 	}
 
 	// If we don't have an exact selection, disable modes that need one.
-	if !qpos.exact {
+	if !qpos.Exact {
 		enable["callees"] = false
 		enable["pointsto"] = false
 		enable["whicherrs"] = false
@@ -121,7 +121,7 @@ func What(q *Query) error {
 	// it uses the best-effort name resolution done by go/parser.
 	var sameids []token.Pos
 	var object string
-	if id, ok := qpos.path[0].(*ast.Ident); ok {
+	if id, ok := qpos.Path[0].(*ast.Ident); ok {
 		if id.Obj == nil {
 			// An unresolved identifier is potentially a package name.
 			// Resolve them with a simple importer (adds ~100µs).
@@ -136,13 +136,13 @@ func What(q *Query) error {
 				}
 				return pkg, nil
 			}
-			f := qpos.path[len(qpos.path)-1].(*ast.File)
-			ast.NewPackage(qpos.fset, map[string]*ast.File{"": f}, importer, nil)
+			f := qpos.Path[len(qpos.Path)-1].(*ast.File)
+			ast.NewPackage(qpos.Fset, map[string]*ast.File{"": f}, importer, nil)
 		}
 
 		if id.Obj != nil {
 			object = id.Obj.Name
-			decl := qpos.path[len(qpos.path)-1]
+			decl := qpos.Path[len(qpos.Path)-1]
 			ast.Inspect(decl, func(n ast.Node) bool {
 				if n, ok := n.(*ast.Ident); ok && n.Obj == id.Obj {
 					sameids = append(sameids, n.Pos())
@@ -152,8 +152,8 @@ func What(q *Query) error {
 		}
 	}
 
-	q.Output(qpos.fset, &whatResult{
-		path:       qpos.path,
+	q.Output(qpos.Fset, &whatResult{
+		path:       qpos.Path,
 		srcdir:     srcdir,
 		importPath: importPath,
 		modes:      modes,

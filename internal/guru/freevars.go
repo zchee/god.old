@@ -48,8 +48,8 @@ func Freevars(q *Query) error {
 		return err
 	}
 
-	file := qpos.path[len(qpos.path)-1] // the enclosing file
-	fileScope := qpos.info.Scopes[file]
+	file := qpos.Path[len(qpos.Path)-1] // the enclosing file
+	fileScope := qpos.Info.Scopes[file]
 	pkgScope := fileScope.Parent()
 
 	// The id and sel functions return non-nil if they denote an
@@ -70,7 +70,7 @@ func Freevars(q *Query) error {
 	}
 
 	id = func(n *ast.Ident) types.Object {
-		obj := qpos.info.Uses[n]
+		obj := qpos.Info.Uses[n]
 		if obj == nil {
 			return nil // not a reference
 		}
@@ -87,7 +87,7 @@ func Freevars(q *Query) error {
 		if scope == fileScope || scope == pkgScope {
 			return nil // defined at file or package scope
 		}
-		if qpos.start <= obj.Pos() && obj.Pos() <= qpos.end {
+		if qpos.Start <= obj.Pos() && obj.Pos() <= qpos.end {
 			return nil // defined within selection => not free
 		}
 		return obj
@@ -99,7 +99,7 @@ func Freevars(q *Query) error {
 	refsMap := make(map[string]freevarsRef)
 
 	// Visit all the identifiers in the selected ASTs.
-	ast.Inspect(qpos.path[0], func(n ast.Node) bool {
+	ast.Inspect(qpos.Path[0], func(n ast.Node) bool {
 		if n == nil {
 			return true // popping DFS stack
 		}
@@ -107,7 +107,7 @@ func Freevars(q *Query) error {
 		// Is this node contained within the selection?
 		// (freevars permits inexact selections,
 		// like two stmts in a block.)
-		if qpos.start <= n.Pos() && n.End() <= qpos.end {
+		if qpos.Start <= n.Pos() && n.End() <= qpos.end {
 			var obj types.Object
 			var prune bool
 			switch n := n.(type) {
@@ -136,7 +136,7 @@ func Freevars(q *Query) error {
 					panic(obj)
 				}
 
-				typ := qpos.info.TypeOf(n.(ast.Expr))
+				typ := qpos.Info.TypeOf(n.(ast.Expr))
 				ref := freevarsRef{kind, printNode(lprog.Fset, n), typ, obj}
 				refsMap[ref.ref] = ref
 
@@ -163,7 +163,7 @@ func Freevars(q *Query) error {
 }
 
 type freevarsResult struct {
-	qpos *queryPos
+	qpos *QueryPos
 	refs []freevarsRef
 }
 
@@ -179,7 +179,7 @@ func (r *freevarsResult) PrintPlain(printf printfFunc) {
 		printf(r.qpos, "No free identifiers.")
 	} else {
 		printf(r.qpos, "Free identifiers:")
-		qualifier := types.RelativeTo(r.qpos.info.Pkg)
+		qualifier := types.RelativeTo(r.qpos.Info.Pkg)
 		for _, ref := range r.refs {
 			// Avoid printing "type T T".
 			var typstr string

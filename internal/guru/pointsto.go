@@ -51,10 +51,10 @@ func Pointsto(q *Query) error {
 		return err
 	}
 
-	path, action := findInterestingNode(qpos.info, qpos.path)
+	path, action := findInterestingNode(qpos.Info, qpos.Path)
 	if action != actionExpr {
 		return fmt.Errorf("pointer analysis wants an expression; got %s",
-			astutil.NodeDescription(qpos.path[0]))
+			astutil.NodeDescription(qpos.Path[0]))
 	}
 
 	var expr ast.Expr
@@ -64,7 +64,7 @@ func Pointsto(q *Query) error {
 		// ambiguous ValueSpec containing multiple names
 		return fmt.Errorf("multiple value specification")
 	case *ast.Ident:
-		obj = qpos.info.ObjectOf(n)
+		obj = qpos.Info.ObjectOf(n)
 		expr = n
 	case ast.Expr:
 		expr = n
@@ -75,7 +75,7 @@ func Pointsto(q *Query) error {
 
 	// Reject non-pointerlike types (includes all constants---except nil).
 	// TODO(adonovan): reject nil too.
-	typ := qpos.info.TypeOf(expr)
+	typ := qpos.Info.TypeOf(expr)
 	if !pointer.CanPoint(typ) {
 		return fmt.Errorf("pointer analysis wants an expression of reference type; got %s", typ)
 	}
@@ -85,9 +85,9 @@ func Pointsto(q *Query) error {
 	var isAddr bool
 	if obj != nil {
 		// def/ref of func/var object
-		value, isAddr, err = ssaValueForIdent(prog, qpos.info, obj, path)
+		value, isAddr, err = ssaValueForIdent(prog, qpos.Info, obj, path)
 	} else {
-		value, isAddr, err = ssaValueForExpr(prog, qpos.info, path)
+		value, isAddr, err = ssaValueForExpr(prog, qpos.Info, path)
 	}
 	if err != nil {
 		return err // e.g. trivially dead code
@@ -203,7 +203,7 @@ type pointerResult struct {
 }
 
 type pointstoResult struct {
-	qpos *queryPos
+	qpos *QueryPos
 	typ  types.Type      // type of expression
 	ptrs []pointerResult // pointer info (typ is concrete => len==1)
 }
@@ -214,17 +214,17 @@ func (r *pointstoResult) PrintPlain(printf printfFunc) {
 		// reflect.Value expression.
 
 		if len(r.ptrs) > 0 {
-			printf(r.qpos, "this %s may contain these dynamic types:", r.qpos.typeString(r.typ))
+			printf(r.qpos, "this %s may contain these dynamic types:", r.qpos.TypeString(r.typ))
 			for _, ptr := range r.ptrs {
 				var obj types.Object
 				if nt, ok := deref(ptr.typ).(*types.Named); ok {
 					obj = nt.Obj()
 				}
 				if len(ptr.labels) > 0 {
-					printf(obj, "\t%s, may point to:", r.qpos.typeString(ptr.typ))
+					printf(obj, "\t%s, may point to:", r.qpos.TypeString(ptr.typ))
 					printLabels(printf, ptr.labels, "\t\t")
 				} else {
-					printf(obj, "\t%s", r.qpos.typeString(ptr.typ))
+					printf(obj, "\t%s", r.qpos.TypeString(ptr.typ))
 				}
 			}
 		} else {
@@ -234,11 +234,11 @@ func (r *pointstoResult) PrintPlain(printf printfFunc) {
 		// Show labels for other expressions.
 		if ptr := r.ptrs[0]; len(ptr.labels) > 0 {
 			printf(r.qpos, "this %s may point to these objects:",
-				r.qpos.typeString(r.typ))
+				r.qpos.TypeString(r.typ))
 			printLabels(printf, ptr.labels, "\t")
 		} else {
 			printf(r.qpos, "this %s may not point to anything.",
-				r.qpos.typeString(r.typ))
+				r.qpos.TypeString(r.typ))
 		}
 	}
 }
@@ -258,7 +258,7 @@ func (r *pointstoResult) JSON(fset *token.FileSet) []byte {
 			})
 		}
 		pts = append(pts, serial.PointsTo{
-			Type:    r.qpos.typeString(ptr.typ),
+			Type:    r.qpos.TypeString(ptr.typ),
 			NamePos: namePos,
 			Labels:  labels,
 		})

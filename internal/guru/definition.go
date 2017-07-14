@@ -31,14 +31,14 @@ func Definition(q *Query) error {
 			return err
 		}
 
-		id, _ := qpos.path[0].(*ast.Ident)
+		id, _ := qpos.Path[0].(*ast.Ident)
 		if id == nil {
 			return fmt.Errorf("no identifier here")
 		}
 
 		// Did the parser resolve it to a local object?
 		if obj := id.Obj; obj != nil && obj.Pos().IsValid() {
-			q.Output(qpos.fset, &definitionResult{
+			q.Output(qpos.Fset, &definitionResult{
 				pos:   obj.Pos(),
 				descr: fmt.Sprintf("%s %s", obj.Kind, obj.Name),
 			})
@@ -46,13 +46,13 @@ func Definition(q *Query) error {
 		}
 
 		// Qualified identifier?
-		if pkg := packageForQualIdent(qpos.path, id); pkg != "" {
-			srcdir := filepath.Dir(qpos.fset.File(qpos.start).Name())
-			tok, pos, err := findPackageMember(q.Build, qpos.fset, srcdir, pkg, id.Name)
+		if pkg := packageForQualIdent(qpos.Path, id); pkg != "" {
+			srcdir := filepath.Dir(qpos.Fset.File(qpos.Start).Name())
+			tok, pos, err := findPackageMember(q.Build, qpos.Fset, srcdir, pkg, id.Name)
 			if err != nil {
 				return err
 			}
-			q.Output(qpos.fset, &definitionResult{
+			q.Output(qpos.Fset, &definitionResult{
 				pos:   pos,
 				descr: fmt.Sprintf("%s %s.%s", tok, pkg, id.Name),
 			})
@@ -81,7 +81,7 @@ func Definition(q *Query) error {
 		return err
 	}
 
-	id, _ := qpos.path[0].(*ast.Ident)
+	id, _ := qpos.Path[0].(*ast.Ident)
 	if id == nil {
 		return fmt.Errorf("no identifier here")
 	}
@@ -90,9 +90,9 @@ func Definition(q *Query) error {
 	// If id is an anonymous field declaration,
 	// it is both a use of a type and a def of a field;
 	// prefer the use in that case.
-	obj := qpos.info.Uses[id]
+	obj := qpos.Info.Uses[id]
 	if obj == nil {
-		obj = qpos.info.Defs[id]
+		obj = qpos.Info.Defs[id]
 		if obj == nil {
 			// Happens for y in "switch y := x.(type)",
 			// and the package declaration,
@@ -107,7 +107,7 @@ func Definition(q *Query) error {
 
 	q.Output(lprog.Fset, &definitionResult{
 		pos:   obj.Pos(),
-		descr: qpos.objectString(obj),
+		descr: qpos.ObjectString(obj),
 	})
 	return nil
 }

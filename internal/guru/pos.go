@@ -108,7 +108,7 @@ func sameFile(x, y string) bool {
 
 // fastQueryPos parses the position string and returns a queryPos.
 // It parses only a single file and does not run the type checker.
-func fastQueryPos(ctxt *build.Context, pos string) (*queryPos, error) {
+func fastQueryPos(ctxt *build.Context, pos string) (*QueryPos, error) {
 	filename, startOffset, endOffset, err := parsePos(pos)
 	if err != nil {
 		return nil, err
@@ -138,5 +138,5 @@ func fastQueryPos(ctxt *build.Context, pos string) (*queryPos, error) {
 		return nil, fmt.Errorf("no syntax here")
 	}
 
-	return &queryPos{fset, start, end, path, exact, nil}, nil
+	return &QueryPos{fset, start, end, path, exact, nil}, nil
 }

@@ -103,7 +103,7 @@ func (r *describeValueResult) Result(fset *token.FileSet) interface{} {
 		Pos:    fset.Position(r.expr.Pos()).String(),
 		Detail: "value",
 		Value: &serial.DescribeValue{
-			Type:   r.qpos.typeString(r.typ),
+			Type:   r.qpos.TypeString(r.typ),
 			Value:  value,
 			ObjPos: objpos,
 		},
@@ -121,10 +121,10 @@ func (r *describeTypeResult) Result(fset *token.FileSet) interface{} {
 		Pos:    fset.Position(r.node.Pos()).String(),
 		Detail: "type",
 		Type: &serial.DescribeType{
-			Type:    r.qpos.typeString(r.typ),
+			Type:    r.qpos.TypeString(r.typ),
 			NamePos: namePos,
 			NameDef: nameDef,
-			Methods: methodsToSerial(r.qpos.info.Pkg, r.methods, fset),
+			Methods: methodsToSerial(r.qpos.Info.Pkg, r.methods, fset),
 		},
 	}
 }
@@ -187,7 +187,7 @@ func (r *implementsResult) Result(fset *token.FileSet) interface{} {
 	var method *serial.DescribeMethod
 	if r.method != nil {
 		method = &serial.DescribeMethod{
-			Name: r.qpos.objectString(r.method),
+			Name: r.qpos.ObjectString(r.method),
 			Pos:  fset.Position(r.method.Pos()).String(),
 		}
 	}
@@ -196,9 +196,9 @@ func (r *implementsResult) Result(fset *token.FileSet) interface{} {
 		AssignableTo:            makeImplementsTypes(r.to, fset),
 		AssignableFrom:          makeImplementsTypes(r.from, fset),
 		AssignableFromPtr:       makeImplementsTypes(r.fromPtr, fset),
-		AssignableToMethod:      methodsToSerial(r.qpos.info.Pkg, r.toMethod, fset),
-		AssignableFromMethod:    methodsToSerial(r.qpos.info.Pkg, r.fromMethod, fset),
-		AssignableFromPtrMethod: methodsToSerial(r.qpos.info.Pkg, r.fromPtrMethod, fset),
+		AssignableToMethod:      methodsToSerial(r.qpos.Info.Pkg, r.toMethod, fset),
+		AssignableFromMethod:    methodsToSerial(r.qpos.Info.Pkg, r.fromMethod, fset),
+		AssignableFromPtrMethod: methodsToSerial(r.qpos.Info.Pkg, r.fromPtrMethod, fset),
 		Method:                  method,
 	}
 
@@ -241,7 +241,7 @@ func (r *pointstoResult) Result(fset *token.FileSet) interface{} {
 			})
 		}
 		pts = append(pts, serial.PointsTo{
-			Type:    r.qpos.typeString(ptr.typ),
+			Type:    r.qpos.TypeString(ptr.typ),
 			NamePos: namePos,
 			Labels:  labels,
 		})
@@ -310,7 +310,7 @@ func (r *whicherrsResult) Result(fset *token.FileSet) interface{} {
 	}
 	for _, t := range r.types {
 		var et serial.WhichErrsType
-		et.Type = r.qpos.typeString(t.typ)
+		et.Type = r.qpos.TypeString(t.typ)
 		et.Position = fset.Position(t.obj.Pos()).String()
 		we.Types = append(we.Types, et)
 	}

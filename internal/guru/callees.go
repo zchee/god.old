@@ -40,7 +40,7 @@ func Callees(q *Query) error {
 
 	// Determine the enclosing call for the specified position.
 	var e *ast.CallExpr
-	for _, n := range qpos.path {
+	for _, n := range qpos.Path {
 		if e, _ = n.(*ast.CallExpr); e != nil {
 			break
 		}
@@ -53,7 +53,7 @@ func Callees(q *Query) error {
 	// not what the user intended.
 
 	// Reject type conversions.
-	if qpos.info.Types[e.Fun].IsType() {
+	if qpos.Info.Types[e.Fun].IsType() {
 		return fmt.Errorf("this is a type conversion, not a function call")
 	}
 
@@ -62,7 +62,7 @@ func Callees(q *Query) error {
 	// e.g.  f := func(){}; f().
 	switch funexpr := unparen(e.Fun).(type) {
 	case *ast.Ident:
-		switch obj := qpos.info.Uses[funexpr].(type) {
+		switch obj := qpos.Info.Uses[funexpr].(type) {
 		case *types.Builtin:
 			// Reject calls to built-ins.
 			return fmt.Errorf("this is a call to the built-in '%s' operator", obj.Name())
@@ -75,12 +75,12 @@ func Callees(q *Query) error {
 			return nil
 		}
 	case *ast.SelectorExpr:
-		sel := qpos.info.Selections[funexpr]
+		sel := qpos.Info.Selections[funexpr]
 		if sel == nil {
 			// qualified identifier.
 			// May refer to top level function variable
 			// or to top level function.
-			callee := qpos.info.Uses[funexpr.Sel]
+			callee := qpos.Info.Uses[funexpr.Sel]
 			if obj, ok := callee.(*types.Func); ok {
 				q.Output(lprog.Fset, &calleesTypesResult{
 					site:   e,
@@ -113,7 +113,7 @@ func Callees(q *Query) error {
 		return err
 	}
 
-	pkg := prog.Package(qpos.info.Pkg)
+	pkg := prog.Package(qpos.Info.Pkg)
 	if pkg == nil {
 		return fmt.Errorf("no SSA package")
 	}
@@ -122,7 +122,7 @@ func Callees(q *Query) error {
 	prog.Build()
 
 	// Ascertain calling function and call site.
-	callerFn := ssa.EnclosingFunction(pkg, qpos.path)
+	callerFn := ssa.EnclosingFunction(pkg, qpos.Path)
 	if callerFn == nil {
 		return fmt.Errorf("no SSA function built for this location (dead code?)")
 	}

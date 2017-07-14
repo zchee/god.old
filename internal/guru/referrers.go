@@ -45,20 +45,20 @@ func Referrers(q *Query) error {
 		return err
 	}
 
-	id, _ := qpos.path[0].(*ast.Ident)
+	id, _ := qpos.Path[0].(*ast.Ident)
 	if id == nil {
 		return fmt.Errorf("no identifier here")
 	}
 
-	obj := qpos.info.ObjectOf(id)
+	obj := qpos.Info.ObjectOf(id)
 	if obj == nil {
 		// Happens for y in "switch y := x.(type)",
 		// the package declaration,
 		// and unresolved identifiers.
-		if _, ok := qpos.path[1].(*ast.File); ok { // package decl?
-			return packageReferrers(q, qpos.info.Pkg.Path())
+		if _, ok := qpos.Path[1].(*ast.File); ok { // package decl?
+			return packageReferrers(q, qpos.Info.Pkg.Path())
 		}
-		return fmt.Errorf("no object for identifier: %T", qpos.path[1])
+		return fmt.Errorf("no object for identifier: %T", qpos.Path[1])
 	}
 
 	// Imported package name?
@@ -79,15 +79,15 @@ func Referrers(q *Query) error {
 		// We'll use the the object's position to identify it in the larger program.
 		objposn := fset.Position(obj.Pos())
 		defpkg := obj.Pkg().Path() // defining package
-		return globalReferrers(q, qpos.info.Pkg.Path(), defpkg, objposn, pkglevel)
+		return globalReferrers(q, qpos.Info.Pkg.Path(), defpkg, objposn, pkglevel)
 	}
 
 	q.Output(fset, &referrersInitialResult{
-		qinfo: qpos.info,
+		qinfo: qpos.Info,
 		obj:   obj,
 	})
 
-	outputUses(q, fset, usesOf(obj, qpos.info), obj.Pkg())
+	outputUses(q, fset, usesOf(obj, qpos.Info), obj.Pkg())
 
 	return nil // success
 }

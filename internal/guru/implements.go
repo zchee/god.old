@@ -70,7 +70,7 @@ func implements(q *Query) error {
 	}
 
 	// Find the selected type.
-	path, action := findInterestingNode(qpos.info, qpos.path)
+	path, action := findInterestingNode(qpos.Info, qpos.Path)
 
 	var method *types.Func
 	var T types.Type // selected type (receiver if method != nil)
@@ -79,7 +79,7 @@ func implements(q *Query) error {
 	case actionExpr:
 		// method?
 		if id, ok := path[0].(*ast.Ident); ok {
-			if obj, ok := qpos.info.ObjectOf(id).(*types.Func); ok {
+			if obj, ok := qpos.Info.ObjectOf(id).(*types.Func); ok {
 				recv := obj.Type().(*types.Signature).Recv()
 				if recv == nil {
 					return fmt.Errorf("this function is not a method")
@@ -91,11 +91,11 @@ func implements(q *Query) error {
 
 		// If not a method, use the expression's type.
 		if T == nil {
-			T = qpos.info.TypeOf(path[0].(ast.Expr))
+			T = qpos.Info.TypeOf(path[0].(ast.Expr))
 		}
 
 	case actionType:
-		T = qpos.info.TypeOf(path[0].(ast.Expr))
+		T = qpos.Info.TypeOf(path[0].(ast.Expr))
 	}
 	if T == nil {
 		return fmt.Errorf("not a type, method, or value")
@@ -195,7 +195,7 @@ func implements(q *Query) error {
 }
 
 type implementsResult struct {
-	qpos *queryPos
+	qpos *QueryPos
 
 	t       types.Type   // queried type (not necessarily named)
 	pos     interface{}  // pos of t (*types.Name or *QueryPos)
@@ -216,20 +216,20 @@ func (r *implementsResult) PrintPlain(printf printfFunc) {
 	meth := func(sel *types.Selection) {
 		if sel != nil {
 			printf(sel.Obj(), "\t%s method (%s).%s",
-				relation, r.qpos.typeString(sel.Recv()), sel.Obj().Name())
+				relation, r.qpos.TypeString(sel.Recv()), sel.Obj().Name())
 		}
 	}
 
 	if isInterface(r.t) {
 		if types.NewMethodSet(r.t).Len() == 0 { // TODO(adonovan): cache mset
-			printf(r.pos, "empty interface type %s", r.qpos.typeString(r.t))
+			printf(r.pos, "empty interface type %s", r.qpos.TypeString(r.t))
 			return
 		}
 
 		if r.method == nil {
-			printf(r.pos, "interface type %s", r.qpos.typeString(r.t))
+			printf(r.pos, "interface type %s", r.qpos.TypeString(r.t))
 		} else {
-			printf(r.method, "abstract method %s", r.qpos.objectString(r.method))
+			printf(r.method, "abstract method %s", r.qpos.ObjectString(r.method))
 		}
 
 		// Show concrete types (or methods) first; use two passes.
@@ -237,7 +237,7 @@ func (r *implementsResult) PrintPlain(printf printfFunc) {
 			if !isInterface(sub) {
 				if r.method == nil {
 					printf(deref(sub).(*types.Named).Obj(), "\t%s %s type %s",
-						relation, typeKind(sub), r.qpos.typeString(sub))
+						relation, typeKind(sub), r.qpos.TypeString(sub))
 				} else {
 					meth(r.toMethod[i])
 				}
@@ -247,7 +247,7 @@ func (r *implementsResult) PrintPlain(printf printfFunc) {
 			if isInterface(sub) {
 				if r.method == nil {
 					printf(sub.(*types.Named).Obj(), "\t%s %s type %s",
-						relation, typeKind(sub), r.qpos.typeString(sub))
+						relation, typeKind(sub), r.qpos.TypeString(sub))
 				} else {
 					meth(r.toMethod[i])
 				}
@@ -258,7 +258,7 @@ func (r *implementsResult) PrintPlain(printf printfFunc) {
 		for i, super := range r.from {
 			if r.method == nil {
 				printf(super.(*types.Named).Obj(), "\t%s %s",
-					relation, r.qpos.typeString(super))
+					relation, r.qpos.TypeString(super))
 			} else {
 				meth(r.fromMethod[i])
 			}
@@ -269,15 +269,15 @@ func (r *implementsResult) PrintPlain(printf printfFunc) {
 		if r.from != nil {
 			if r.method == nil {
 				printf(r.pos, "%s type %s",
-					typeKind(r.t), r.qpos.typeString(r.t))
+					typeKind(r.t), r.qpos.TypeString(r.t))
 			} else {
 				printf(r.method, "concrete method %s",
-					r.qpos.objectString(r.method))
+					r.qpos.ObjectString(r.method))
 			}
 			for i, super := range r.from {
 				if r.method == nil {
 					printf(super.(*types.Named).Obj(), "\t%s %s",
-						relation, r.qpos.typeString(super))
+						relation, r.qpos.TypeString(super))
 				} else {
 					meth(r.fromMethod[i])
 				}
@@ -285,24 +285,24 @@ func (r *implementsResult) PrintPlain(printf printfFunc) {
 		}
 		if r.fromPtr != nil {
 			if r.method == nil {
-				printf(r.pos, "pointer type *%s", r.qpos.typeString(r.t))
+				printf(r.pos, "pointer type *%s", r.qpos.TypeString(r.t))
 			} else {
 				// TODO(adonovan): de-dup (C).f and (*C).f implementing (I).f.
 				printf(r.method, "concrete method %s",
-					r.qpos.objectString(r.method))
+					r.qpos.ObjectString(r.method))
 			}
 
 			for i, psuper := range r.fromPtr {
 				if r.method == nil {
 					printf(psuper.(*types.Named).Obj(), "\t%s %s",
-						relation, r.qpos.typeString(psuper))
+						relation, r.qpos.TypeString(psuper))
 				} else {
 					meth(r.fromPtrMethod[i])
 				}
 			}
 		} else if r.from == nil {
 			printf(r.pos, "%s type %s implements only interface{}",
-				typeKind(r.t), r.qpos.typeString(r.t))
+				typeKind(r.t), r.qpos.TypeString(r.t))
 		}
 	}
 }
@@ -311,7 +311,7 @@ func (r *implementsResult) JSON(fset *token.FileSet) []byte {
 	var method *serial.DescribeMethod
 	if r.method != nil {
 		method = &serial.DescribeMethod{
-			Name: r.qpos.objectString(r.method),
+			Name: r.qpos.ObjectString(r.method),
 			Pos:  fset.Position(r.method.Pos()).String(),
 		}
 	}
@@ -320,9 +320,9 @@ func (r *implementsResult) JSON(fset *token.FileSet) []byte {
 		AssignableTo:            makeImplementsTypes(r.to, fset),
 		AssignableFrom:          makeImplementsTypes(r.from, fset),
 		AssignableFromPtr:       makeImplementsTypes(r.fromPtr, fset),
-		AssignableToMethod:      methodsToSerial(r.qpos.info.Pkg, r.toMethod, fset),
-		AssignableFromMethod:    methodsToSerial(r.qpos.info.Pkg, r.fromMethod, fset),
-		AssignableFromPtrMethod: methodsToSerial(r.qpos.info.Pkg, r.fromPtrMethod, fset),
+		AssignableToMethod:      methodsToSerial(r.qpos.Info.Pkg, r.toMethod, fset),
+		AssignableFromMethod:    methodsToSerial(r.qpos.Info.Pkg, r.fromMethod, fset),
+		AssignableFromPtrMethod: methodsToSerial(r.qpos.Info.Pkg, r.fromPtrMethod, fset),
 		Method:                  method,
 	})
 

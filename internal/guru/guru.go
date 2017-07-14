@@ -50,22 +50,22 @@ type QueryResult interface {
 // a textual extent in the program's source code, the AST node it
 // corresponds to, and the package to which it belongs.
 // Instances are created by parseQueryPos.
-type queryPos struct {
-	fset       *token.FileSet
-	start, end token.Pos           // source extent of query
-	path       []ast.Node          // AST path from query node to root of ast.File
-	exact      bool                // 2nd result of PathEnclosingInterval
-	info       *loader.PackageInfo // type info for the queried package (nil for fastQueryPos)
+type QueryPos struct {
+	Fset       *token.FileSet
+	Start, end token.Pos           // source extent of query
+	Path       []ast.Node          // AST path from query node to root of ast.File
+	Exact      bool                // 2nd result of PathEnclosingInterval
+	Info       *loader.PackageInfo // type info for the queried package (nil for fastQueryPos)
 }
 
 // TypeString prints type T relative to the query position.
-func (qpos *queryPos) typeString(T types.Type) string {
-	return types.TypeString(T, types.RelativeTo(qpos.info.Pkg))
+func (qpos *QueryPos) TypeString(T types.Type) string {
+	return types.TypeString(T, types.RelativeTo(qpos.Info.Pkg))
 }
 
 // ObjectString prints object obj relative to the query position.
-func (qpos *queryPos) objectString(obj types.Object) string {
-	return types.ObjectString(obj, types.RelativeTo(qpos.info.Pkg))
+func (qpos *QueryPos) ObjectString(obj types.Object) string {
+	return types.ObjectString(obj, types.RelativeTo(qpos.Info.Pkg))
 }
 
 // A Query specifies a single guru query.
@@ -160,7 +160,7 @@ func importQueryPackage(pos string, conf *loader.Config) (string, error) {
 	if err != nil {
 		return "", err // bad query
 	}
-	filename := fqpos.fset.File(fqpos.start).Name()
+	filename := fqpos.Fset.File(fqpos.Start).Name()
 
 	_, importPath, err := guessImportPath(filename, conf.Build)
 	if err != nil {
@@ -219,7 +219,7 @@ func pkgContainsFile(bp *build.Package, filename string) byte {
 // this is appropriate for queries that allow fairly arbitrary syntax,
 // e.g. "describe".
 //
-func parseQueryPos(lprog *loader.Program, pos string, needExact bool) (*queryPos, error) {
+func parseQueryPos(lprog *loader.Program, pos string, needExact bool) (*QueryPos, error) {
 	filename, startOffset, endOffset, err := parsePos(pos)
 	if err != nil {
 		return nil, err
@@ -249,7 +249,7 @@ func parseQueryPos(lprog *loader.Program, pos string, needExact bool) (*queryPos
 	if needExact && !exact {
 		return nil, fmt.Errorf("ambiguous selection within %s", astutil.NodeDescription(path[0]))
 	}
-	return &queryPos{lprog.Fset, start, end, path, exact, info}, nil
+	return &QueryPos{lprog.Fset, start, end, path, exact, info}, nil
 }
 
 // ---------- Utilities ----------
@@ -369,8 +369,8 @@ func fprintf(w io.Writer, fset *token.FileSet, pos interface{}, format string, a
 	}:
 		start = pos.Pos()
 		end = start
-	case *queryPos:
-		start = pos.start
+	case *QueryPos:
+		start = pos.Start
 		end = pos.end
 	case nil:
 		// no-op

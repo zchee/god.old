@@ -142,8 +142,8 @@ func Peers(q *Query) error {
 // for close operations, it's the Lparen of the function call.
 //
 // TODO(adonovan): handle implicit receive operations from 'for...range chan' statements.
-func findOp(qpos *queryPos) token.Pos {
-	for _, n := range qpos.path {
+func findOp(qpos *QueryPos) token.Pos {
+	for _, n := range qpos.Path {
 		switch n := n.(type) {
 		case *ast.UnaryExpr:
 			if n.Op == token.ARROW {
@@ -154,7 +154,7 @@ func findOp(qpos *queryPos) token.Pos {
 		case *ast.CallExpr:
 			// close function call can only exist as a direct identifier
 			if close, ok := unparen(n.Fun).(*ast.Ident); ok {
-				if b, ok := qpos.info.Info.Uses[close].(*types.Builtin); ok && b.Name() == "close" {
+				if b, ok := qpos.Info.Info.Uses[close].(*types.Builtin); ok && b.Name() == "close" {
 					return n.Lparen
 				}
 			}

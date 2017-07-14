@@ -47,12 +47,12 @@ func Describe(q *Query) error {
 	}
 
 	if false { // debugging
-		fprintf(os.Stderr, lprog.Fset, qpos.path[0], "you selected: %s %s",
-			astutil.NodeDescription(qpos.path[0]), pathToString(qpos.path))
+		fprintf(os.Stderr, lprog.Fset, qpos.Path[0], "you selected: %s %s",
+			astutil.NodeDescription(qpos.Path[0]), pathToString(qpos.Path))
 	}
 
 	var qr QueryResult
-	path, action := findInterestingNode(qpos.info, qpos.path)
+	path, action := findInterestingNode(qpos.Info, qpos.Path)
 	switch action {
 	case actionExpr:
 		qr, err = describeValue(qpos, path)
@@ -310,7 +310,7 @@ func findInterestingNode(pkginfo *loader.PackageInfo, path []ast.Node) ([]ast.No
 	return nil, actionUnknown // unreachable
 }
 
-func describeValue(qpos *queryPos, path []ast.Node) (*describeValueResult, error) {
+func describeValue(qpos *QueryPos, path []ast.Node) (*describeValueResult, error) {
 	var expr ast.Expr
 	var obj types.Object
 	switch n := path[0].(type) {
@@ -318,7 +318,7 @@ func describeValue(qpos *queryPos, path []ast.Node) (*describeValueResult, error
 		// ambiguous ValueSpec containing multiple names
 		return nil, fmt.Errorf("multiple value specification")
 	case *ast.Ident:
-		obj = qpos.info.ObjectOf(n)
+		obj = qpos.Info.ObjectOf(n)
 		expr = n
 	case ast.Expr:
 		expr = n
@@ -327,11 +327,11 @@ func describeValue(qpos *queryPos, path []ast.Node) (*describeValueResult, error
 		return nil, fmt.Errorf("unexpected AST for expr: %T", n)
 	}
 
-	typ := qpos.info.TypeOf(expr)
+	typ := qpos.Info.TypeOf(expr)
 	if typ == nil {
 		typ = types.Typ[types.Invalid]
 	}
-	constVal := qpos.info.Types[expr].Value
+	constVal := qpos.Info.Types[expr].Value
 	if c, ok := obj.(*types.Const); ok {
 		constVal = c.Val()
 	}
@@ -342,13 +342,13 @@ func describeValue(qpos *queryPos, path []ast.Node) (*describeValueResult, error
 		typ:      typ,
 		constVal: constVal,
 		obj:      obj,
-		methods:  accessibleMethods(typ, qpos.info.Pkg),
-		fields:   accessibleFields(typ, qpos.info.Pkg),
+		methods:  accessibleMethods(typ, qpos.Info.Pkg),
+		fields:   accessibleFields(typ, qpos.Info.Pkg),
 	}, nil
 }
 
 type describeValueResult struct {
-	qpos     *queryPos
+	qpos     *QueryPos
 	expr     ast.Expr     // query node
 	typ      types.Type   // type of expression
 	constVal exact.Value  // value of expression, if constant
@@ -377,10 +377,10 @@ func (r *describeValueResult) PrintPlain(printf printfFunc) {
 	if r.obj != nil {
 		if r.obj.Pos() == r.expr.Pos() {
 			// defining ident
-			printf(r.expr, "definition of %s%s%s", prefix, r.qpos.objectString(r.obj), suffix)
+			printf(r.expr, "definition of %s%s%s", prefix, r.qpos.ObjectString(r.obj), suffix)
 		} else {
 			// referring ident
-			printf(r.expr, "reference to %s%s%s", prefix, r.qpos.objectString(r.obj), suffix)
+			printf(r.expr, "reference to %s%s%s", prefix, r.qpos.ObjectString(r.obj), suffix)
 			if def := r.obj.Pos(); def != token.NoPos {
 				printf(def, "defined here")
 			}
@@ -392,7 +392,7 @@ func (r *describeValueResult) PrintPlain(printf printfFunc) {
 			printf(r.expr, "%s%s", desc, suffix)
 		} else {
 			// non-constant expression
-			printf(r.expr, "%s of type %s", desc, r.qpos.typeString(r.typ))
+			printf(r.expr, "%s of type %s", desc, r.qpos.TypeString(r.typ))
 		}
 	}
 
@@ -414,7 +414,7 @@ func (r *describeValueResult) JSON(fset *token.FileSet) []byte {
 		Pos:    fset.Position(r.expr.Pos()).String(),
 		Detail: "value",
 		Value: &serial.DescribeValue{
-			Type:   r.qpos.typeString(r.typ),
+			Type:   r.qpos.TypeString(r.typ),
 			Value:  value,
 			ObjPos: objpos,
 		},
@@ -423,12 +423,12 @@ func (r *describeValueResult) JSON(fset *token.FileSet) []byte {
 
 // ---- TYPE ------------------------------------------------------------
 
-func describeType(qpos *queryPos, path []ast.Node) (*describeTypeResult, error) {
+func describeType(qpos *QueryPos, path []ast.Node) (*describeTypeResult, error) {
 	var description string
 	var typ types.Type
 	switch n := path[0].(type) {
 	case *ast.Ident:
-		obj := qpos.info.ObjectOf(n).(*types.TypeName)
+		obj := qpos.Info.ObjectOf(n).(*types.TypeName)
 		typ = obj.Type()
 		if isAlias(obj) {
 			description = "alias of "
@@ -441,14 +441,14 @@ func describeType(qpos *queryPos, path []ast.Node) (*describeTypeResult, error) 
 		}
 
 	case ast.Expr:
-		typ = qpos.info.TypeOf(n)
+		typ = qpos.Info.TypeOf(n)
 
 	default:
 		// Unreachable?
 		return nil, fmt.Errorf("unexpected AST for type: %T", n)
 	}
 
-	description = description + "type " + qpos.typeString(typ)
+	description = description + "type " + qpos.TypeString(typ)
 
 	// Show sizes for structs and named types (it's fairly obvious for others).
 	switch typ.(type) {
@@ -463,13 +463,13 @@ func describeType(qpos *queryPos, path []ast.Node) (*describeTypeResult, error) 
 		node:        path[0],
 		description: description,
 		typ:         typ,
-		methods:     accessibleMethods(typ, qpos.info.Pkg),
-		fields:      accessibleFields(typ, qpos.info.Pkg),
+		methods:     accessibleMethods(typ, qpos.Info.Pkg),
+		fields:      accessibleFields(typ, qpos.Info.Pkg),
 	}, nil
 }
 
 type describeTypeResult struct {
-	qpos        *queryPos
+	qpos        *QueryPos
 	node        ast.Node
 	description string
 	typ         types.Type
@@ -530,7 +530,7 @@ func (r *describeTypeResult) PrintPlain(printf printfFunc) {
 	// Show the underlying type for a reference to a named type.
 	if nt, ok := r.typ.(*types.Named); ok && r.node.Pos() != nt.Obj().Pos() {
 		// TODO(adonovan): improve display of complex struct/interface types.
-		printf(nt.Obj(), "defined as %s", r.qpos.typeString(nt.Underlying()))
+		printf(nt.Obj(), "defined as %s", r.qpos.TypeString(nt.Underlying()))
 	}
 
 	printMethods(printf, r.node, r.methods)
@@ -557,26 +557,26 @@ func (r *describeTypeResult) JSON(fset *token.FileSet) []byte {
 		Pos:    fset.Position(r.node.Pos()).String(),
 		Detail: "type",
 		Type: &serial.DescribeType{
-			Type:    r.qpos.typeString(r.typ),
+			Type:    r.qpos.TypeString(r.typ),
 			NamePos: namePos,
 			NameDef: nameDef,
-			Methods: methodsToSerial(r.qpos.info.Pkg, r.methods, fset),
+			Methods: methodsToSerial(r.qpos.Info.Pkg, r.methods, fset),
 		},
 	})
 }
 
 // ---- PACKAGE ------------------------------------------------------------
 
-func describePackage(qpos *queryPos, path []ast.Node) (*describePackageResult, error) {
+func describePackage(qpos *QueryPos, path []ast.Node) (*describePackageResult, error) {
 	var description string
 	var pkg *types.Package
 	switch n := path[0].(type) {
 	case *ast.ImportSpec:
 		var obj types.Object
 		if n.Name != nil {
-			obj = qpos.info.Defs[n.Name]
+			obj = qpos.Info.Defs[n.Name]
 		} else {
-			obj = qpos.info.Implicits[n]
+			obj = qpos.Info.Implicits[n]
 		}
 		pkgname, _ := obj.(*types.PkgName)
 		if pkgname == nil {
@@ -588,12 +588,12 @@ func describePackage(qpos *queryPos, path []ast.Node) (*describePackageResult, e
 	case *ast.Ident:
 		if _, isDef := path[1].(*ast.File); isDef {
 			// e.g. package id
-			pkg = qpos.info.Pkg
+			pkg = qpos.Info.Pkg
 			description = fmt.Sprintf("definition of package %q", pkg.Path())
 		} else {
 			// e.g. import id "..."
 			//  or  id.F()
-			pkg = qpos.info.ObjectOf(n).(*types.PkgName).Imported()
+			pkg = qpos.Info.ObjectOf(n).(*types.PkgName).Imported()
 			description = fmt.Sprintf("reference to package %q", pkg.Path())
 		}
 
@@ -608,11 +608,11 @@ func describePackage(qpos *queryPos, path []ast.Node) (*describePackageResult, e
 		// Enumerate the accessible package members
 		// in lexicographic order.
 		for _, name := range pkg.Scope().Names() {
-			if pkg == qpos.info.Pkg || ast.IsExported(name) {
+			if pkg == qpos.Info.Pkg || ast.IsExported(name) {
 				mem := pkg.Scope().Lookup(name)
 				var methods []*types.Selection
 				if mem, ok := mem.(*types.TypeName); ok {
-					methods = accessibleMethods(mem.Type(), qpos.info.Pkg)
+					methods = accessibleMethods(mem.Type(), qpos.Info.Pkg)
 				}
 				members = append(members, &describeMember{
 					mem,
@@ -623,7 +623,7 @@ func describePackage(qpos *queryPos, path []ast.Node) (*describePackageResult, e
 		}
 	}
 
-	return &describePackageResult{qpos.fset, path[0], description, pkg, members}, nil
+	return &describePackageResult{qpos.Fset, path[0], description, pkg, members}, nil
 }
 
 type describePackageResult struct {
@@ -761,11 +761,11 @@ func tokenOf(o types.Object) string {
 
 // ---- STATEMENT ------------------------------------------------------------
 
-func describeStmt(qpos *queryPos, path []ast.Node) (*describeStmtResult, error) {
+func describeStmt(qpos *QueryPos, path []ast.Node) (*describeStmtResult, error) {
 	var description string
 	switch n := path[0].(type) {
 	case *ast.Ident:
-		if qpos.info.Defs[n] != nil {
+		if qpos.Info.Defs[n] != nil {
 			description = "labelled statement"
 		} else {
 			description = "reference to labelled statement"
@@ -775,7 +775,7 @@ func describeStmt(qpos *queryPos, path []ast.Node) (*describeStmtResult, error) 
 		// Nothing much to say about statements.
 		description = astutil.NodeDescription(n)
 	}
-	return &describeStmtResult{qpos.fset, path[0], description}, nil
+	return &describeStmtResult{qpos.Fset, path[0], description}, nil
 }
 
 type describeStmtResult struct {

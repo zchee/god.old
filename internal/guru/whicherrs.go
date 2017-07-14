@@ -54,10 +54,10 @@ func Whicherrs(q *Query) error {
 		return err
 	}
 
-	path, action := findInterestingNode(qpos.info, qpos.path)
+	path, action := findInterestingNode(qpos.Info, qpos.Path)
 	if action != actionExpr {
 		return fmt.Errorf("whicherrs wants an expression; got %s",
-			astutil.NodeDescription(qpos.path[0]))
+			astutil.NodeDescription(qpos.Path[0]))
 	}
 	var expr ast.Expr
 	var obj types.Object
@@ -66,7 +66,7 @@ func Whicherrs(q *Query) error {
 		// ambiguous ValueSpec containing multiple names
 		return fmt.Errorf("multiple value specification")
 	case *ast.Ident:
-		obj = qpos.info.ObjectOf(n)
+		obj = qpos.Info.ObjectOf(n)
 		expr = n
 	case ast.Expr:
 		expr = n
@@ -74,7 +74,7 @@ func Whicherrs(q *Query) error {
 		return fmt.Errorf("unexpected AST for expr: %T", n)
 	}
 
-	typ := qpos.info.TypeOf(expr)
+	typ := qpos.Info.TypeOf(expr)
 	if !types.Identical(typ, builtinErrorType) {
 		return fmt.Errorf("selection is not an expression of type 'error'")
 	}
@@ -82,9 +82,9 @@ func Whicherrs(q *Query) error {
 	var value ssa.Value
 	if obj != nil {
 		// def/ref of func/var object
-		value, _, err = ssaValueForIdent(prog, qpos.info, obj, path)
+		value, _, err = ssaValueForIdent(prog, qpos.Info, obj, path)
 	} else {
-		value, _, err = ssaValueForExpr(prog, qpos.info, path)
+		value, _, err = ssaValueForExpr(prog, qpos.Info, path)
 	}
 	if err != nil {
 		return err // e.g. trivially dead code
@@ -197,7 +197,7 @@ func Whicherrs(q *Query) error {
 		default:
 			return
 		}
-		if !isAccessibleFrom(name, qpos.info.Pkg) {
+		if !isAccessibleFrom(name, qpos.Info.Pkg) {
 			return
 		}
 		res.types = append(res.types, &errorType{conc, name})
@@ -211,7 +211,7 @@ func Whicherrs(q *Query) error {
 }
 
 // findVisibleErrs returns a mapping from each package-level variable of type "error" to nil.
-func findVisibleErrs(prog *ssa.Program, qpos *queryPos) map[*ssa.Global]ssa.Value {
+func findVisibleErrs(prog *ssa.Program, qpos *QueryPos) map[*ssa.Global]ssa.Value {
 	globals := make(map[*ssa.Global]ssa.Value)
 	for _, pkg := range prog.AllPackages() {
 		for _, mem := range pkg.Members {
@@ -224,7 +224,7 @@ func findVisibleErrs(prog *ssa.Program, qpos *queryPos) map[*ssa.Global]ssa.Valu
 			if !types.Identical(deref(gbltype), builtinErrorType) {
 				continue
 			}
-			if !isAccessibleFrom(gbl.Object(), qpos.info.Pkg) {
+			if !isAccessibleFrom(gbl.Object(), qpos.Info.Pkg) {
 				continue
 			}
 			globals[gbl] = nil
@@ -234,7 +234,7 @@ func findVisibleErrs(prog *ssa.Program, qpos *queryPos) map[*ssa.Global]ssa.Valu
 }
 
 // findVisibleConsts returns a mapping from each package-level constant assignable to type "error", to nil.
-func findVisibleConsts(prog *ssa.Program, qpos *queryPos) map[ssa.Const]*ssa.NamedConst {
+func findVisibleConsts(prog *ssa.Program, qpos *QueryPos) map[ssa.Const]*ssa.NamedConst {
 	constants := make(map[ssa.Const]*ssa.NamedConst)
 	for _, pkg := range prog.AllPackages() {
 		for _, mem := range pkg.Members {
@@ -246,7 +246,7 @@ func findVisibleConsts(prog *ssa.Program, qpos *queryPos) map[ssa.Const]*ssa.Nam
 			if !types.AssignableTo(consttype, builtinErrorType) {
 				continue
 			}
-			if !isAccessibleFrom(obj.Object(), qpos.info.Pkg) {
+			if !isAccessibleFrom(obj.Object(), qpos.Info.Pkg) {
 				continue
 			}
 			constants[*obj.Value] = obj
@@ -280,7 +280,7 @@ type errorType struct {
 }
 
 type whicherrsResult struct {
-	qpos    *queryPos
+	qpos    *QueryPos
 	errpos  token.Pos
 	globals []ssa.Member
 	consts  []ssa.Member
@@ -291,19 +291,19 @@ func (r *whicherrsResult) PrintPlain(printf printfFunc) {
 	if len(r.globals) > 0 {
 		printf(r.qpos, "this error may point to these globals:")
 		for _, g := range r.globals {
-			printf(g.Pos(), "\t%s", g.RelString(r.qpos.info.Pkg))
+			printf(g.Pos(), "\t%s", g.RelString(r.qpos.Info.Pkg))
 		}
 	}
 	if len(r.consts) > 0 {
 		printf(r.qpos, "this error may contain these constants:")
 		for _, c := range r.consts {
-			printf(c.Pos(), "\t%s", c.RelString(r.qpos.info.Pkg))
+			printf(c.Pos(), "\t%s", c.RelString(r.qpos.Info.Pkg))
 		}
 	}
 	if len(r.types) > 0 {
 		printf(r.qpos, "this error may contain these dynamic types:")
 		for _, t := range r.types {
-			printf(t.obj.Pos(), "\t%s", r.qpos.typeString(t.typ))
+			printf(t.obj.Pos(), "\t%s", r.qpos.TypeString(t.typ))
 		}
 	}
 }
@@ -319,7 +319,7 @@ func (r *whicherrsResult) JSON(fset *token.FileSet) []byte {
 	}
 	for _, t := range r.types {
 		var et serial.WhichErrsType
-		et.Type = r.qpos.typeString(t.typ)
+		et.Type = r.qpos.TypeString(t.typ)
 		et.Position = fset.Position(t.obj.Pos()).String()
 		we.Types = append(we.Types, et)
 	}
