@@ -25,7 +25,7 @@ const Address = ":7154" // g: 7, o: 15, d: 4
 // Server represents a god server.
 type Server struct {
 	grpcs  *grpc.Server
-	mu     sync.Mutex
+	mu     sync.RWMutex
 	done   chan struct{}
 	result interface{}
 }
@@ -87,6 +87,14 @@ func (s *Server) Output(fset *token.FileSet, qr guru.QueryResult) {
 	s.mu.Unlock()
 }
 
+func (s *Server) query(pos string) *guru.Query {
+	return &guru.Query{
+		Pos:    pos,
+		Build:  &build.Default,
+		Output: s.Output,
+	}
+}
+
 func (s *Server) Ping(ctx context.Context, req *serialpb.Request) (*serialpb.Response, error) {
 	return &serialpb.Response{}, nil
 }
@@ -105,17 +113,15 @@ func (s *Server) GetCallStack(ctx context.Context, loc *serialpb.Location) (*ser
 
 func (s *Server) GetDefinition(ctx context.Context, loc *serialpb.Location) (*serialpb.Definition, error) {
 	log.Debug("GetDefinition")
-	query := &guru.Query{
-		Pos:    loc.Pos,
-		Build:  &build.Default,
-		Output: s.Output,
-	}
+	query := s.query(loc.Pos)
 	if err := guru.Definition(query); err != nil {
 		return nil, err
 	}
-	s.mu.Lock()
+
+	s.mu.RLock()
 	def := s.result.(*serial.Definition)
-	s.mu.Unlock()
+	s.mu.RUnlock()
+
 	return &serialpb.Definition{
 		ObjPos: def.ObjPos,
 		Desc:   def.Desc,
