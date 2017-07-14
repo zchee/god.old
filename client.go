@@ -71,6 +71,23 @@ func (c *Client) Callers(ctx context.Context, pos string, opt *ClientOptions) {
 	log.Debugf("callees: %T => %+v\n", callers, callers)
 }
 
+// Callstack return the callers information of current cursor position.
+func (c *Client) Callstack(ctx context.Context, pos string, opt *ClientOptions) {
+	log.Debugln("Callstack")
+
+	loc := &serialpb.Location{Pos: pos}
+	if opt != nil {
+		loc.Options = &serialpb.Options{
+			Scope: opt.Scope,
+		}
+	}
+	callstack, err := c.grpcc.GetCallStack(ctx, loc)
+	if err != nil {
+		log.Fatalf("could not get CallStack: %v", err)
+	}
+	log.Debugf("callstack: %T => %+v\n", callstack, callstack)
+}
+
 // Definition return the definition information of current cursor position.
 func (c *Client) Definition(ctx context.Context, pos string, opt *ClientOptions) {
 	log.Debugln("Definition")

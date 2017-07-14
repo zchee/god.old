@@ -158,7 +158,29 @@ func (s *Server) GetCallers(ctx context.Context, loc *serialpb.Location) (*seria
 }
 
 func (s *Server) GetCallStack(ctx context.Context, loc *serialpb.Location) (*serialpb.CallStack, error) {
-	return &serialpb.CallStack{}, nil
+	query := s.query(loc)
+	if err := guru.Callstack(query); err != nil {
+		return nil, err
+	}
+
+	s.mu.RLock()
+	res := s.result.(*serial.CallStack)
+	s.mu.RUnlock()
+
+	callers := make([]serialpb.Caller, len(res.Callers))
+	for i, caller := range res.Callers {
+		callers[i] = serialpb.Caller{
+			Pos:    caller.Pos,
+			Desc:   caller.Desc,
+			Caller: caller.Caller,
+		}
+	}
+
+	return &serialpb.CallStack{
+		Pos:     res.Pos,
+		Target:  res.Target,
+		Callers: callers,
+	}, nil
 }
 
 func (s *Server) GetDefinition(ctx context.Context, loc *serialpb.Location) (*serialpb.Definition, error) {
