@@ -109,8 +109,6 @@ func (s *Server) Ping(ctx context.Context, req *serialpb.Request) (*serialpb.Res
 }
 
 func (s *Server) GetCallees(ctx context.Context, loc *serialpb.Location) (*serialpb.Callees, error) {
-	log.Debug("GetCallees")
-	log.Debugln(loc)
 	query := s.query(loc)
 	if err := guru.Callees(query); err != nil {
 		return nil, err
@@ -144,7 +142,6 @@ func (s *Server) GetCallStack(ctx context.Context, loc *serialpb.Location) (*ser
 }
 
 func (s *Server) GetDefinition(ctx context.Context, loc *serialpb.Location) (*serialpb.Definition, error) {
-	log.Debug("GetDefinition")
 	query := s.query(loc)
 	if err := guru.Definition(query); err != nil {
 		return nil, err
