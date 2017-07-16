@@ -117,7 +117,7 @@ message FreeVar {
 // (concrete or non-empty interface) which may be assigned to it.
 //
 message Implements {
-  ImplementsType T = 1;                                                        // the queried type
+  ImplementsType T = 1 [ (gogoproto.nullable) = false ];                       // the queried type
   repeated ImplementsType AssignableTo = 2 [ (gogoproto.nullable) = false ];   // types assignable to T
   repeated ImplementsType AssignableFrom = 3 [ (gogoproto.nullable) = false ]; // interface types assignable from T
   repeated ImplementsType AssignableFromPtr = 4
