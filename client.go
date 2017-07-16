@@ -122,6 +122,23 @@ func (c *Client) Describe(ctx context.Context, pos string, opt *ClientOptions) {
 	log.Debugf("desc: %T => %+v\n", desc, desc)
 }
 
+// FreeVars return the freevars information of current cursor position.
+func (c *Client) FreeVars(ctx context.Context, pos string, opt *ClientOptions) {
+	log.Debugln("FreeVars")
+
+	loc := &serialpb.Location{Pos: pos}
+	if opt != nil {
+		loc.Options = &serialpb.Options{
+			Scope: opt.Scope,
+		}
+	}
+	frs, err := c.grpcc.GetFreeVars(ctx, loc)
+	if err != nil {
+		log.Fatalf("could not get FreeVar: %v", err)
+	}
+	log.Debugf("frs: %T => %+v\n", frs, frs)
+}
+
 func (c *Client) Ping() (*serialpb.Response, error) {
 	log.Debugln("Ping")
 	return c.grpcc.Ping(context.Background(), &serialpb.Request{})

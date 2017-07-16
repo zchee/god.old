@@ -259,8 +259,29 @@ func (s *Server) GetDescribe(ctx context.Context, loc *serialpb.Location) (*seri
 	return desc, nil
 }
 
-func (s *Server) GetFreeVar(ctx context.Context, loc *serialpb.Location) (*serialpb.FreeVars, error) {
-	return &serialpb.FreeVars{}, nil
+func (s *Server) GetFreeVars(ctx context.Context, loc *serialpb.Location) (*serialpb.FreeVars, error) {
+	query := s.query(loc)
+	if err := guru.Freevars(query); err != nil {
+		return nil, err
+	}
+
+	s.mu.RLock()
+	res := s.result.([]serial.FreeVar)
+	s.mu.RUnlock()
+
+	frs := &serialpb.FreeVars{
+		FreeVar: make([]serialpb.FreeVar, len(res)),
+	}
+	for i, ref := range res {
+		frs.FreeVar[i] = serialpb.FreeVar{
+			Pos:  ref.Pos,
+			Kind: ref.Kind,
+			Ref:  ref.Ref,
+			Type: ref.Type,
+		}
+	}
+
+	return frs, nil
 }
 
 func (s *Server) GetImplements(ctx context.Context, loc *serialpb.Location) (*serialpb.Implements, error) {
