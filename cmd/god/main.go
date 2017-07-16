@@ -110,6 +110,8 @@ func main() {
 		c.Describe(ctx, args[1], opt)
 	case "freevars":
 		c.FreeVars(ctx, args[1], opt)
+	case "implements":
+		c.Implements(ctx, args[1], opt)
 	case "stop":
 		c.Stop()
 	default:
