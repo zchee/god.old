@@ -202,8 +202,6 @@ message DescribeValue {
   string ObjPos = 3; // location of the definition, if an Ident
 }
 
-message DescribeMethods { repeated DescribeMethod Methods = 1; }
-
 message DescribeMethod {
   string Name = 1; // method name, as defined by types.Selection.String()
   string Pos = 3;  // location of the method's definition
@@ -275,7 +273,7 @@ service God {
   rpc GetCallers(Location) returns (Callers) {}
   rpc GetCallStack(Location) returns (CallStack) {}
   rpc GetDefinition(Location) returns (Definition) {}
-  rpc GetDescribe(Location) returns (DescribeMethods) {}
+  rpc GetDescribe(Location) returns (Describe) {}
   rpc GetFreeVar(Location) returns (FreeVars) {}
   rpc GetImplements(Location) returns (Implements) {}
   rpc GetPeers(Location) returns (Peers) {}
