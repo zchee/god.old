@@ -27,6 +27,12 @@ lint:
 vet:
 	@go vet -all -shadow $(GO_PKGS)
 
+test:
+	go test -v .
+
+test/guru:
+	go test -v ./internal/guru
+
 vendor/install:
 	go install -v -x $(GO_VENDOR_PACKAGES)
 	go install -v -x -race $(GO_VENDOR_PACKAGES)
