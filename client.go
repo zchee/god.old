@@ -127,6 +127,21 @@ func (c *Client) FreeVars(ctx context.Context, pos string, opt *ClientOptions) {
 	log.Debugf("frs: %T => %+v\n", frs, frs)
 }
 
+// Implements return the implements information of current cursor position.
+func (c *Client) Implements(ctx context.Context, pos string, opt *ClientOptions) {
+	loc := &serialpb.Location{Pos: pos}
+	if opt != nil {
+		loc.Options = &serialpb.Options{
+			Scope: opt.Scope,
+		}
+	}
+	impl, err := c.grpcc.GetImplements(ctx, loc)
+	if err != nil {
+		log.Fatalf("could not get Implements: %v", err)
+	}
+	log.Debugf("impl: %T => %+v\n", impl, impl)
+}
+
 func (c *Client) Ping() (*serialpb.Response, error) {
 	log.Debugln("Ping")
 	return c.grpcc.Ping(context.Background(), &serialpb.Request{})

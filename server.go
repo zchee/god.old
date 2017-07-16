@@ -284,7 +284,76 @@ func (s *Server) GetFreeVars(ctx context.Context, loc *serialpb.Location) (*seri
 }
 
 func (s *Server) GetImplements(ctx context.Context, loc *serialpb.Location) (*serialpb.Implements, error) {
-	return &serialpb.Implements{}, nil
+	query := s.query(loc)
+	if err := guru.Implements(query); err != nil {
+		return nil, err
+	}
+
+	s.mu.RLock()
+	res := s.result.(*serial.Implements)
+	s.mu.RUnlock()
+
+	impl := &serialpb.Implements{
+		T: serialpb.ImplementsType{
+			Name: res.T.Name,
+			Pos:  res.T.Pos,
+			Kind: res.T.Kind,
+		},
+		AssignableTo:            make([]serialpb.ImplementsType, len(res.AssignableTo)),
+		AssignableFrom:          make([]serialpb.ImplementsType, len(res.AssignableFrom)),
+		AssignableFromPtr:       make([]serialpb.ImplementsType, len(res.AssignableFromPtr)),
+		AssignableToMethod:      make([]serialpb.DescribeMethod, len(res.AssignableToMethod)),
+		AssignableFromMethod:    make([]serialpb.DescribeMethod, len(res.AssignableFromMethod)),
+		AssignableFromPtrMethod: make([]serialpb.DescribeMethod, len(res.AssignableFromPtrMethod)),
+	}
+	if res.Method != nil {
+		impl.Method = &serialpb.DescribeMethod{
+			Name: res.Method.Name,
+			Pos:  res.Method.Pos,
+		}
+	}
+
+	for i, implType := range res.AssignableTo {
+		impl.AssignableTo[i] = serialpb.ImplementsType{
+			Name: implType.Name,
+			Pos:  implType.Pos,
+			Kind: implType.Kind,
+		}
+	}
+	for i, implType := range res.AssignableFrom {
+		impl.AssignableFrom[i] = serialpb.ImplementsType{
+			Name: implType.Name,
+			Pos:  implType.Pos,
+			Kind: implType.Kind,
+		}
+	}
+	for i, implType := range res.AssignableFromPtr {
+		impl.AssignableFromPtr[i] = serialpb.ImplementsType{
+			Name: implType.Name,
+			Pos:  implType.Pos,
+			Kind: implType.Kind,
+		}
+	}
+	for i, descMethod := range res.AssignableToMethod {
+		impl.AssignableToMethod[i] = serialpb.DescribeMethod{
+			Name: descMethod.Name,
+			Pos:  descMethod.Pos,
+		}
+	}
+	for i, descMethod := range res.AssignableFromMethod {
+		impl.AssignableFromMethod[i] = serialpb.DescribeMethod{
+			Name: descMethod.Name,
+			Pos:  descMethod.Pos,
+		}
+	}
+	for i, descMethod := range res.AssignableFromPtrMethod {
+		impl.AssignableFromPtrMethod[i] = serialpb.DescribeMethod{
+			Name: descMethod.Name,
+			Pos:  descMethod.Pos,
+		}
+	}
+
+	return impl, nil
 }
 
 func (s *Server) GetPeers(ctx context.Context, loc *serialpb.Location) (*serialpb.Peers, error) {
