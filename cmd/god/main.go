@@ -34,9 +34,6 @@ func init() {
 
 func main() {
 	if *daemonize {
-		sigc := make(chan os.Signal, 1)
-		signal.Notify(sigc, os.Interrupt, syscall.SIGTERM)
-
 		if *cpuprofile != "" {
 			f, err := os.Create(*cpuprofile)
 			if err != nil {
@@ -45,12 +42,19 @@ func main() {
 			pprof.StartCPUProfile(f)
 			defer pprof.StopCPUProfile()
 		}
+
+		sigc := make(chan os.Signal, 1)
+		signal.Notify(sigc, os.Interrupt, syscall.SIGTERM)
+
 		srv := god.NewServer()
 		errc := make(chan error, 1)
 		go func() { errc <- srv.Start() }()
+
 		select {
 		case err := <-errc:
-			log.Fatal(err)
+			if err != nil {
+				log.Fatal(err)
+			}
 		case <-sigc:
 			return
 		}
