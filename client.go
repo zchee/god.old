@@ -105,6 +105,23 @@ func (c *Client) Definition(ctx context.Context, pos string, opt *ClientOptions)
 	log.Debugf("def: %T => %+v\n", def, def)
 }
 
+// Describe return the describe information of current cursor position.
+func (c *Client) Describe(ctx context.Context, pos string, opt *ClientOptions) {
+	log.Debugln("Describe")
+
+	loc := &serialpb.Location{Pos: pos}
+	if opt != nil {
+		loc.Options = &serialpb.Options{
+			Scope: opt.Scope,
+		}
+	}
+	desc, err := c.grpcc.GetDescribe(ctx, loc)
+	if err != nil {
+		log.Fatalf("could not get Describe: %v", err)
+	}
+	log.Debugf("desc: %T => %+v\n", desc, desc)
+}
+
 func (c *Client) Ping() (*serialpb.Response, error) {
 	log.Debugln("Ping")
 	return c.grpcc.Ping(context.Background(), &serialpb.Request{})

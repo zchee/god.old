@@ -199,8 +199,64 @@ func (s *Server) GetDefinition(ctx context.Context, loc *serialpb.Location) (*se
 	}, nil
 }
 
-func (s *Server) GetDescribe(ctx context.Context, loc *serialpb.Location) (*serialpb.DescribeMethods, error) {
-	return &serialpb.DescribeMethods{}, nil
+func (s *Server) GetDescribe(ctx context.Context, loc *serialpb.Location) (*serialpb.Describe, error) {
+	query := s.query(loc)
+	if err := guru.Describe(query); err != nil {
+		return nil, err
+	}
+
+	s.mu.RLock()
+	res := s.result.(*serial.Describe)
+	s.mu.RUnlock()
+
+	desc := &serialpb.Describe{
+		Desc:   res.Desc,
+		Pos:    res.Pos,
+		Detail: res.Detail,
+	}
+
+	if res.Package != nil {
+		members := make([]*serialpb.DescribeMember, len(res.Package.Members))
+		for i, member := range res.Package.Members {
+			members[i] = &serialpb.DescribeMember{
+				Name:  member.Name,
+				Type:  member.Type,
+				Value: member.Value,
+				Pos:   member.Pos,
+				Kind:  member.Kind,
+			}
+		}
+		desc.Package = &serialpb.DescribePackage{
+			Path:    res.Package.Path,
+			Members: members,
+		}
+	}
+	if res.Type != nil {
+		typ := &serialpb.DescribeType{
+			Type:    res.Type.Type,
+			NamePos: res.Type.NamePos,
+			NameDef: res.Type.NameDef,
+		}
+		methods := make([]serialpb.DescribeMethod, len(res.Type.Methods))
+		for i, method := range res.Type.Methods {
+			methods[i] = serialpb.DescribeMethod{
+				Name: method.Name,
+				Pos:  method.Pos,
+			}
+		}
+		typ.Methods = methods
+		desc.Type = typ
+	}
+	if res.Value != nil {
+		value := &serialpb.DescribeValue{
+			Type:   res.Value.Type,
+			Value:  res.Value.Value,
+			ObjPos: res.Value.ObjPos,
+		}
+		desc.Value = value
+	}
+
+	return desc, nil
 }
 
 func (s *Server) GetFreeVar(ctx context.Context, loc *serialpb.Location) (*serialpb.FreeVars, error) {
