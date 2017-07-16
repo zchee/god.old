@@ -102,6 +102,8 @@ func main() {
 		c.Callstack(ctx, args[1], opt)
 	case "definition":
 		c.Definition(ctx, args[1], opt)
+	case "describe":
+		c.Describe(ctx, args[1], opt)
 	case "stop":
 		c.Stop()
 	default:
