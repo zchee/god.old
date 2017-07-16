@@ -63,7 +63,6 @@ func (s *Server) Start() error {
 	// wating for serve result or done
 	select {
 	case err := <-errc:
-		log.Debug("<-errc")
 		if err != nil {
 			return err
 		}

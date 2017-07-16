@@ -39,8 +39,6 @@ func NewClient(conn *grpc.ClientConn) *Client {
 
 // Callees return the callees information of current cursor position.
 func (c *Client) Callees(ctx context.Context, pos string, opt *ClientOptions) {
-	log.Debugln("Callees")
-
 	loc := &serialpb.Location{Pos: pos}
 	if opt != nil {
 		loc.Options = &serialpb.Options{
@@ -56,8 +54,6 @@ func (c *Client) Callees(ctx context.Context, pos string, opt *ClientOptions) {
 
 // Callers return the callers information of current cursor position.
 func (c *Client) Callers(ctx context.Context, pos string, opt *ClientOptions) {
-	log.Debugln("Callers")
-
 	loc := &serialpb.Location{Pos: pos}
 	if opt != nil {
 		loc.Options = &serialpb.Options{
@@ -73,8 +69,6 @@ func (c *Client) Callers(ctx context.Context, pos string, opt *ClientOptions) {
 
 // Callstack return the callers information of current cursor position.
 func (c *Client) Callstack(ctx context.Context, pos string, opt *ClientOptions) {
-	log.Debugln("Callstack")
-
 	loc := &serialpb.Location{Pos: pos}
 	if opt != nil {
 		loc.Options = &serialpb.Options{
@@ -90,8 +84,6 @@ func (c *Client) Callstack(ctx context.Context, pos string, opt *ClientOptions) 
 
 // Definition return the definition information of current cursor position.
 func (c *Client) Definition(ctx context.Context, pos string, opt *ClientOptions) {
-	log.Debugln("Definition")
-
 	loc := &serialpb.Location{Pos: pos}
 	if opt != nil {
 		loc.Options = &serialpb.Options{
@@ -107,8 +99,6 @@ func (c *Client) Definition(ctx context.Context, pos string, opt *ClientOptions)
 
 // Describe return the describe information of current cursor position.
 func (c *Client) Describe(ctx context.Context, pos string, opt *ClientOptions) {
-	log.Debugln("Describe")
-
 	loc := &serialpb.Location{Pos: pos}
 	if opt != nil {
 		loc.Options = &serialpb.Options{
@@ -124,8 +114,6 @@ func (c *Client) Describe(ctx context.Context, pos string, opt *ClientOptions) {
 
 // FreeVars return the freevars information of current cursor position.
 func (c *Client) FreeVars(ctx context.Context, pos string, opt *ClientOptions) {
-	log.Debugln("FreeVars")
-
 	loc := &serialpb.Location{Pos: pos}
 	if opt != nil {
 		loc.Options = &serialpb.Options{
