@@ -99,7 +99,7 @@ message CallStack {
 }
 
 // FreeVars is the slice of FreeVar.
-message FreeVars { repeated FreeVar FreeVar = 1; }
+message FreeVars { repeated FreeVar FreeVar = 1 [ (gogoproto.nullable) = false ]; }
 
 // FreeVar is one element of the slice returned by a 'freevars'
 // query.  Each one identifies an expression referencing a local
