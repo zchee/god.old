@@ -25,7 +25,7 @@ import (
 // the corresponding methods of the types that would have been reported
 // by an implements query on the receiver type.
 //
-func implements(q *Query) error {
+func Implements(q *Query) error {
 	lconf := loader.Config{Build: q.Build}
 	allowErrors(&lconf)
 

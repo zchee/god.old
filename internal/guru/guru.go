@@ -104,7 +104,7 @@ func Run(mode string, q *Query) error {
 	case "freevars":
 		return Freevars(q)
 	case "implements":
-		return implements(q)
+		return Implements(q)
 	case "referrers":
 		return Referrers(q)
 	case "what":
