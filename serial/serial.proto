@@ -274,7 +274,7 @@ service God {
   rpc GetCallStack(Location) returns (CallStack) {}
   rpc GetDefinition(Location) returns (Definition) {}
   rpc GetDescribe(Location) returns (Describe) {}
-  rpc GetFreeVar(Location) returns (FreeVars) {}
+  rpc GetFreeVars(Location) returns (FreeVars) {}
   rpc GetImplements(Location) returns (Implements) {}
   rpc GetPeers(Location) returns (Peers) {}
   rpc GetPointsTo(Location) returns (PointsTo) {}
