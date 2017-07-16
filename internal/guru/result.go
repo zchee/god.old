@@ -46,11 +46,14 @@ func (r *calleesTypesResult) Result(fset *token.FileSet) interface{} {
 func (r *callersResult) Result(fset *token.FileSet) interface{} {
 	var callers []serial.Caller
 	for _, edge := range r.edges {
-		callers = append(callers, serial.Caller{
-			Caller: edge.Caller.Func.String(),
-			Pos:    fset.Position(edge.Pos()).String(),
-			Desc:   edge.Description(),
-		})
+		caller := serial.Caller{
+			Pos:  fset.Position(edge.Pos()).String(),
+			Desc: edge.Description(),
+		}
+		if edge.Caller.Func != nil {
+			caller.Caller = edge.Caller.Func.String()
+		}
+		callers = append(callers, caller)
 	}
 	return callers
 }
