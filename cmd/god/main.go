@@ -112,6 +112,8 @@ func main() {
 		c.FreeVars(ctx, args[1], opt)
 	case "implements":
 		c.Implements(ctx, args[1], opt)
+	case "peers":
+		c.Peers(ctx, args[1], opt)
 	case "stop":
 		c.Stop()
 	default:
