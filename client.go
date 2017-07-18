@@ -157,6 +157,21 @@ func (c *Client) Peers(ctx context.Context, pos string, opt *ClientOptions) {
 	log.Debugf("peers: %T => %+v\n", peers, peers)
 }
 
+// PointsTo return the pointsTo information of current cursor position.
+func (c *Client) PointsTo(ctx context.Context, pos string, opt *ClientOptions) {
+	loc := &serialpb.Location{Pos: pos}
+	if opt != nil {
+		loc.Options = &serialpb.Options{
+			Scope: opt.Scope,
+		}
+	}
+	pointsTo, err := c.grpcc.GetPointsTo(ctx, loc)
+	if err != nil {
+		log.Fatalf("could not get PointsTo: %v", err)
+	}
+	log.Debugf("pointsTo: %T => %+v\n", pointsTo, pointsTo)
+}
+
 func (c *Client) Ping() (*serialpb.Response, error) {
 	log.Debugln("Ping")
 	return c.grpcc.Ping(context.Background(), &serialpb.Request{})

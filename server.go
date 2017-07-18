@@ -378,8 +378,33 @@ func (s *Server) GetPeers(ctx context.Context, loc *serialpb.Location) (*serialp
 	return peers, nil
 }
 
-func (s *Server) GetPointsTo(ctx context.Context, loc *serialpb.Location) (*serialpb.PointsTo, error) {
-	return &serialpb.PointsTo{}, nil
+func (s *Server) GetPointsTo(ctx context.Context, loc *serialpb.Location) (*serialpb.PointsTos, error) {
+	query := s.query(loc)
+	if err := guru.Implements(query); err != nil {
+		return nil, err
+	}
+
+	s.mu.RLock()
+	res := s.result.([]serial.PointsTo)
+	s.mu.RUnlock()
+
+	pts := &serialpb.PointsTos{
+		PointsTos: make([]serialpb.PointsTo, len(res)),
+	}
+	for i, ptr := range res {
+		pts.PointsTos[i] = serialpb.PointsTo{
+			Type:    ptr.Type,
+			NamePos: ptr.NamePos,
+			Labels:  make([]serialpb.PointsToLabel, len(ptr.Labels)),
+		}
+		for j, label := range ptr.Labels {
+			pts.PointsTos[i].Labels[j] = serialpb.PointsToLabel{
+				Pos:  label.Pos,
+				Desc: label.Desc,
+			}
+		}
+	}
+	return pts, nil
 }
 
 func (s *Server) GetReferrers(ctx context.Context, loc *serialpb.Location) (*serialpb.ReferrersPackage, error) {
