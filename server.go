@@ -357,7 +357,25 @@ func (s *Server) GetImplements(ctx context.Context, loc *serialpb.Location) (*se
 }
 
 func (s *Server) GetPeers(ctx context.Context, loc *serialpb.Location) (*serialpb.Peers, error) {
-	return &serialpb.Peers{}, nil
+	query := s.query(loc)
+	if err := guru.Implements(query); err != nil {
+		return nil, err
+	}
+
+	s.mu.RLock()
+	res := s.result.(*serial.Peers)
+	s.mu.RUnlock()
+
+	peers := &serialpb.Peers{
+		Pos:      res.Pos,
+		Type:     res.Type,
+		Allocs:   res.Allocs,
+		Sends:    res.Sends,
+		Receives: res.Receives,
+		Closes:   res.Closes,
+	}
+
+	return peers, nil
 }
 
 func (s *Server) GetPointsTo(ctx context.Context, loc *serialpb.Location) (*serialpb.PointsTo, error) {
