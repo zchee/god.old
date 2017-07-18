@@ -114,6 +114,8 @@ func main() {
 		c.Implements(ctx, args[1], opt)
 	case "peers":
 		c.Peers(ctx, args[1], opt)
+	case "pointsto":
+		c.PointsTo(ctx, args[1], opt)
 	case "stop":
 		c.Stop()
 	default:
