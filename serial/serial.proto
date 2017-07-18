@@ -178,6 +178,8 @@ message PointsToLabel {
   string Desc = 2; // description of the label
 }
 
+message PointsTos { repeated PointsTo PointsTos = 1 [ (gogoproto.nullable) = false ]; }
+
 // PointsTo is one element of the result of a 'pointsto' query on an
 // expression.  It describes a single pointer: its type and the set of
 // "labels" it points to.
