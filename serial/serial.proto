@@ -279,7 +279,7 @@ service God {
   rpc GetFreeVars(Location) returns (FreeVars) {}
   rpc GetImplements(Location) returns (Implements) {}
   rpc GetPeers(Location) returns (Peers) {}
-  rpc GetPointsTo(Location) returns (PointsTo) {}
+  rpc GetPointsTo(Location) returns (PointsTos) {}
   rpc GetReferrers(Location) returns (ReferrersPackage) {}
   rpc GetWhat(Location) returns (What) {}
   rpc GetWhichErrs(Location) returns (WhichErrs) {}
